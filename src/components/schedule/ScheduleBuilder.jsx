@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
-import { Plus, Moon, BookOpen, Coffee, X } from 'lucide-react';
+import { Plus, Moon, BookOpen, Coffee, X, GripHorizontal } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -28,6 +28,41 @@ export default function ScheduleBuilder() {
 
   const [newBlock, setNewBlock] = useState({ day: 0, start: 16, duration: 1, type: 'study' });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [resizing, setResizing] = useState(null);
+
+  const handleResizeStart = (e, index, startEnd) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const handle = e.currentTarget;
+    handle.setPointerCapture(e.pointerId);
+    setResizing({ index, startY: e.clientY, startEnd, handle });
+  };
+
+  const handleResizeMove = (e) => {
+    if (!resizing) return;
+    
+    const deltaPixels = e.clientY - resizing.startY;
+    const deltaHours = Math.round(deltaPixels / 50);
+    
+    const block = blocks[resizing.index];
+    const newEnd = Math.max(
+        block.start + 1, // Minimum 1 hour duration
+        Math.min(24, resizing.startEnd + deltaHours) // Max 24 hours
+    );
+    
+    if (newEnd !== block.end) {
+        const newBlocks = [...blocks];
+        newBlocks[resizing.index] = { ...newBlocks[resizing.index], end: newEnd };
+        setBlocks(newBlocks);
+    }
+  };
+
+  const handleResizeEnd = (e) => {
+    if (resizing) {
+        resizing.handle.releasePointerCapture(e.pointerId);
+        setResizing(null);
+    }
+  };
 
   const addBlock = () => {
     setBlocks([...blocks, { 
@@ -163,6 +198,16 @@ export default function ScheduleBuilder() {
                     }}
                   >
                     {block.type}
+                    
+                    {/* Resize Handle */}
+                    <div
+                      className="absolute bottom-0 left-0 right-0 h-3 cursor-ns-resize flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/10 hover:bg-black/30"
+                      onPointerDown={(e) => handleResizeStart(e, blocks.indexOf(block), block.end)}
+                      onPointerMove={handleResizeMove}
+                      onPointerUp={handleResizeEnd}
+                    >
+                      <GripHorizontal className="w-3 h-3 text-white/70" />
+                    </div>
                   </div>
                 ))}
               </div>
