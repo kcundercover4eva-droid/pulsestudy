@@ -41,7 +41,7 @@ const StatCard = ({ title, value, icon: Icon, color, trend }) => (
 const FocusTimer = ({ accentColor }) => {
   const [isActive, setIsActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 mins
-  const [sessionType, setSessionType] = useState('pomodoro'); // pomodoro, shortBreak, longBreak
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   useEffect(() => {
     let interval = null;
@@ -49,13 +49,26 @@ const FocusTimer = ({ accentColor }) => {
       interval = setInterval(() => setTimeLeft(t => t - 1), 1000);
     } else if (timeLeft === 0) {
       setIsActive(false);
-      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      setIsFullScreen(false);
+      confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
     }
     return () => clearInterval(interval);
   }, [isActive, timeLeft]);
 
-  const toggleTimer = () => setIsActive(!isActive);
-  
+  const toggleTimer = () => {
+    if (!isActive) {
+      setIsActive(true);
+      setIsFullScreen(true);
+    } else {
+      setIsActive(false);
+    }
+  };
+
+  const exitFullScreen = () => {
+    setIsFullScreen(false);
+    // Don't stop timer, just minimize
+  };
+
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -63,9 +76,76 @@ const FocusTimer = ({ accentColor }) => {
   };
 
   const progress = ((25 * 60 - timeLeft) / (25 * 60)) * 100;
+  
+  // Dynamic color helper
+  const getColor = () => {
+    if (accentColor === 'coral') return 'rose';
+    if (accentColor === 'electricBlue') return 'cyan';
+    return 'green';
+  };
+  const c = getColor();
 
+  // Full Screen Overlay
+  if (isFullScreen) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center text-center p-8">
+        <motion.div 
+           initial={{ opacity: 0, scale: 0.9 }}
+           animate={{ opacity: 1, scale: 1 }}
+           className="w-full max-w-md"
+        >
+           <div className="mb-12">
+             <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full bg-${c}-500/10 text-${c}-400 mb-6 border border-${c}-500/20`}>
+               <Shield className="w-4 h-4" />
+               <span className="font-bold tracking-wider text-sm">FOCUS SHIELD ACTIVE</span>
+             </div>
+             <h2 className="text-4xl font-bold text-white mb-2">Stay in the zone.</h2>
+             <p className="text-white/40">Instagram, TikTok, and Snap are blocked.</p>
+           </div>
+
+           {/* Large Timer */}
+           <div className="relative w-80 h-80 mx-auto mb-12 flex items-center justify-center">
+              <div className={`absolute inset-0 rounded-full border-4 border-${c}-500/10 animate-pulse-slow`} />
+              <svg className="absolute inset-0 w-full h-full transform -rotate-90">
+                <circle cx="160" cy="160" r="140" stroke="currentColor" strokeWidth="12" fill="transparent" className="text-white/5" />
+                <circle 
+                  cx="160" cy="160" r="140" 
+                  stroke="currentColor" strokeWidth="12" 
+                  fill="transparent" 
+                  strokeDasharray={2 * Math.PI * 140}
+                  strokeDashoffset={2 * Math.PI * 140 * (1 - progress / 100)}
+                  className={`text-${c}-400 transition-all duration-1000 ease-linear drop-shadow-[0_0_15px_rgba(74,222,128,0.5)]`}
+                  strokeLinecap="round"
+                />
+              </svg>
+              <div className="text-7xl font-black tabular-nums tracking-tighter text-white">
+                {formatTime(timeLeft)}
+              </div>
+           </div>
+
+           <div className="flex flex-col gap-4">
+             <Button 
+               onClick={exitFullScreen}
+               variant="outline"
+               className="h-14 rounded-2xl border-white/10 text-white hover:bg-white/5"
+             >
+               Minimize (Keep Running)
+             </Button>
+             <Button 
+               onClick={() => { setIsActive(false); setIsFullScreen(false); }}
+               className="h-14 rounded-2xl bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20"
+             >
+               Give Up (Reset Streak)
+             </Button>
+           </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Widget View
   return (
-    <div className="glass-card p-6 rounded-3xl relative overflow-hidden flex flex-col items-center justify-center text-center h-full">
+    <div className="glass-card p-6 rounded-3xl relative overflow-hidden flex flex-col items-center justify-center text-center h-full min-h-[300px]">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20" />
       
       <div className="relative z-10 mb-6">
@@ -73,32 +153,32 @@ const FocusTimer = ({ accentColor }) => {
         <p className="text-xs text-white/30 uppercase tracking-widest mt-1">Ready to block distractions?</p>
       </div>
 
-      <div className="relative w-48 h-48 flex items-center justify-center mb-6">
-        {/* Ring Background */}
+      <div className="relative w-40 h-40 flex items-center justify-center mb-6 cursor-pointer hover:scale-105 transition-transform" onClick={() => isActive && setIsFullScreen(true)}>
         <svg className="absolute inset-0 w-full h-full transform -rotate-90">
-          <circle cx="96" cy="96" r="88" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-white/5" />
+          <circle cx="80" cy="80" r="70" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-white/5" />
           <circle 
-            cx="96" cy="96" r="88" 
+            cx="80" cy="80" r="70" 
             stroke="currentColor" strokeWidth="8" 
             fill="transparent" 
-            strokeDasharray={2 * Math.PI * 88}
-            strokeDashoffset={2 * Math.PI * 88 * (1 - progress / 100)}
-            className={`text-${accentColor === 'neonGreen' ? 'green' : accentColor === 'coral' ? 'rose' : 'cyan'}-400 transition-all duration-1000 ease-linear`}
+            strokeDasharray={2 * Math.PI * 70}
+            strokeDashoffset={2 * Math.PI * 70 * (1 - progress / 100)}
+            className={`text-${c}-400 transition-all duration-1000 ease-linear`}
             strokeLinecap="round"
           />
         </svg>
-        <div className="text-5xl font-black tabular-nums tracking-tighter">
+        <div className="text-4xl font-black tabular-nums tracking-tighter">
           {formatTime(timeLeft)}
         </div>
+        {isActive && <div className="absolute bottom-10 text-[10px] text-white/40 font-bold uppercase">Tap to Expand</div>}
       </div>
 
       <div className="flex gap-4 relative z-10">
         <Button 
           size="lg"
           onClick={toggleTimer}
-          className={`rounded-2xl h-14 px-8 text-lg font-bold shadow-lg shadow-${accentColor === 'neonGreen' ? 'green' : 'rose'}-500/20 bg-white text-black hover:bg-white/90`}
+          className={`rounded-2xl h-12 px-8 font-bold shadow-lg shadow-${c}-500/20 bg-white text-black hover:bg-white/90`}
         >
-          {isActive ? <Pause className="w-5 h-5 mr-2" /> : <Play className="w-5 h-5 mr-2" />}
+          {isActive ? <Pause className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}
           {isActive ? 'Pause' : 'Start Focus'}
         </Button>
       </div>
