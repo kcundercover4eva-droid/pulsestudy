@@ -133,8 +133,8 @@ export default function ScheduleBuilder() {
         </div>
 
         {/* Grid */}
-        <div className="flex-1 overflow-y-auto no-scrollbar relative">
-          <div className="flex min-h-[1200px]"> {/* 50px per hour */}
+        <div className="flex-1 overflow-auto no-scrollbar relative">
+          <div className="flex min-h-[1200px] min-w-[600px]"> {/* 50px per hour */}
             {/* Time Column */}
             <div className="w-12 flex-shrink-0 border-r border-white/10 bg-black/10">
               {HOURS.map(h => (
