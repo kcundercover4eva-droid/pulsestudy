@@ -24,6 +24,8 @@ const SNAP_DECIMAL = SNAP_MINUTES / 60; // 0.25
 export default function ScheduleBuilder() {
   const queryClient = useQueryClient();
   const scrollRef = useRef(null);
+  // Ref for accessing latest blocks in event handlers without triggering re-renders
+  const localBlocksRef = useRef([]);
 
   // --- DATA ---
   const { data: dbBlocks, isLoading } = useQuery({
@@ -33,9 +35,21 @@ export default function ScheduleBuilder() {
 
   const [localBlocks, setLocalBlocks] = useState([]);
 
+  // Keep ref in sync
+  useEffect(() => {
+    localBlocksRef.current = localBlocks;
+  }, [localBlocks]);
+
   useEffect(() => {
     if (dbBlocks) {
-      setLocalBlocks(dbBlocks.map(dbBlock => ({ id: dbBlock.id, ...dbBlock.data })));
+      setLocalBlocks(dbBlocks.map(dbBlock => ({ 
+        id: dbBlock.id, 
+        ...dbBlock.data,
+        // Ensure numeric types to prevent visibility issues
+        day: Number(dbBlock.data.day),
+        start: Number(dbBlock.data.start),
+        end: Number(dbBlock.data.end)
+      })));
     }
   }, [dbBlocks]);
 
@@ -148,8 +162,8 @@ export default function ScheduleBuilder() {
     };
 
     const handlePointerUp = () => {
-      // Persist changes
-      const updatedBlock = localBlocks.find(b => b.id === dragState.blockId);
+      // Persist changes using the ref to get the latest state
+      const updatedBlock = localBlocksRef.current.find(b => b.id === dragState.blockId);
       if (updatedBlock) {
         updateBlockMutation.mutate(updatedBlock);
       }
@@ -163,7 +177,7 @@ export default function ScheduleBuilder() {
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
     };
-  }, [dragState, localBlocks, updateBlockMutation]);
+  }, [dragState, updateBlockMutation]); // Removed localBlocks from dependency to prevent listener churn
 
   return (
     <div className="h-full flex flex-col">
@@ -186,9 +200,9 @@ export default function ScheduleBuilder() {
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label>Type</Label>
+                <Label htmlFor="block-type">Type</Label>
                 <Select onValueChange={(v) => setNewBlock({...newBlock, type: v})} defaultValue="study">
-                  <SelectTrigger className="bg-white/5 border-white/10">
+                  <SelectTrigger id="block-type" className="bg-white/5 border-white/10">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -201,9 +215,9 @@ export default function ScheduleBuilder() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                  <div className="grid gap-2">
-                    <Label>Day</Label>
+                    <Label htmlFor="block-day">Day</Label>
                     <Select onValueChange={(v) => setNewBlock({...newBlock, day: v})} defaultValue="0">
-                      <SelectTrigger className="bg-white/5 border-white/10">
+                      <SelectTrigger id="block-day" className="bg-white/5 border-white/10">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -212,9 +226,9 @@ export default function ScheduleBuilder() {
                     </Select>
                  </div>
                  <div className="grid gap-2">
-                    <Label>Start Time</Label>
+                    <Label htmlFor="block-start">Start Time</Label>
                     <Select onValueChange={(v) => setNewBlock({...newBlock, start: v})} defaultValue="16">
-                      <SelectTrigger className="bg-white/5 border-white/10">
+                      <SelectTrigger id="block-start" className="bg-white/5 border-white/10">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -224,8 +238,9 @@ export default function ScheduleBuilder() {
                  </div>
               </div>
               <div className="grid gap-2">
-                <Label>Duration (hours)</Label>
+                <Label htmlFor="block-duration">Duration (hours)</Label>
                 <Input 
+                   id="block-duration"
                    type="number" 
                    value={newBlock.duration} 
                    onChange={(e) => setNewBlock({...newBlock, duration: e.target.value})}
