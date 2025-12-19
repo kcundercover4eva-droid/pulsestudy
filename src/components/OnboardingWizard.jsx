@@ -6,10 +6,9 @@ import { base44 } from '@/api/base44Client';
 import { useMutation } from '@tanstack/react-query';
 
 const STEPS = [
-  { id: 'welcome', title: 'Welcome' },
-  { id: 'color', title: 'Choose your Vibe' },
-  { id: 'motivation', title: 'Motivation Style' },
-  { id: 'goal', title: 'Weekly Goal' }
+  { id: 'color', title: 'Vibe Check' },
+  { id: 'commitment', title: 'Commitment' },
+  { id: 'tone', title: 'Coaching Style' }
 ];
 
 const THEMES = [
@@ -23,8 +22,16 @@ export default function OnboardingWizard({ onComplete }) {
   const [data, setData] = useState({
     accentColor: 'neonGreen',
     motivationStyle: 'positive',
+    commitmentLevel: 'balanced', // casual, balanced, serious, machine
     weeklyGoalHours: 10
   });
+
+  const COMMITMENT_LEVELS = [
+    { id: 'casual', label: 'Casual', hours: 5, desc: 'Just testing the waters.' },
+    { id: 'balanced', label: 'Balanced', hours: 10, desc: 'School, life, and good grades.' },
+    { id: 'serious', label: 'Serious', hours: 20, desc: 'I need those A\'s.' },
+    { id: 'machine', label: 'Machine', hours: 30, desc: 'Top of the class. No excuses.' }
+  ];
 
   const updateProfileMutation = useMutation({
     mutationFn: async (profileData) => {
@@ -117,10 +124,47 @@ export default function OnboardingWizard({ onComplete }) {
               </motion.div>
             )}
 
-            {/* Step 1: Motivation Style */}
+            {/* Step 1: Commitment */}
             {step === 1 && (
               <motion.div
                 key="step1"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-6"
+              >
+                <div className="text-center">
+                  <h2 className="text-3xl font-bold mb-2">What type of commitment do you have?</h2>
+                  <p className="text-white/60">We'll adapt the schedule to your pace.</p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3">
+                  {COMMITMENT_LEVELS.map((level) => (
+                    <button
+                      key={level.id}
+                      onClick={() => {
+                        update('commitmentLevel', level.id);
+                        update('weeklyGoalHours', level.hours);
+                      }}
+                      className={`relative overflow-hidden rounded-2xl p-4 flex items-center justify-between transition-all duration-300 ${data.commitmentLevel === level.id ? 'bg-white text-slate-900 scale-[1.02]' : 'bg-white/5 hover:bg-white/10'}`}
+                    >
+                      <div>
+                        <div className="font-bold text-lg text-left">{level.label}</div>
+                        <div className={`text-sm text-left ${data.commitmentLevel === level.id ? 'text-slate-600' : 'text-white/50'}`}>
+                          {level.desc}
+                        </div>
+                      </div>
+                      {data.commitmentLevel === level.id && <Target className="w-5 h-5 text-cyan-600" />}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Step 2: Tone */}
+            {step === 2 && (
+              <motion.div
+                key="step2"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
@@ -157,45 +201,6 @@ export default function OnboardingWizard({ onComplete }) {
                       <p className="text-sm text-white/60">"Do you want to fail? Get back to work."</p>
                     </div>
                   </button>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Step 2: Goal */}
-            {step === 2 && (
-              <motion.div
-                key="step2"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-8"
-              >
-                <div className="text-center">
-                  <h2 className="text-3xl font-bold mb-2">Weekly Commitment</h2>
-                  <p className="text-white/60">How many hours of deep focus this week?</p>
-                </div>
-
-                <div className="flex flex-col items-center gap-6">
-                  <div className="relative">
-                     <Target className={`w-32 h-32 opacity-20 text-${data.accentColor === 'coral' ? 'rose' : data.accentColor === 'electricBlue' ? 'cyan' : 'green'}-400`} />
-                     <div className="absolute inset-0 flex items-center justify-center">
-                       <span className="text-5xl font-black">{data.weeklyGoalHours}h</span>
-                     </div>
-                  </div>
-
-                  <input 
-                    type="range" 
-                    min="1" 
-                    max="40" 
-                    value={data.weeklyGoalHours} 
-                    onChange={(e) => update('weeklyGoalHours', parseInt(e.target.value))}
-                    className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer accent-cyan-500"
-                  />
-                  
-                  <div className="flex justify-between w-full text-xs text-white/40 font-mono">
-                    <span>1h (Casual)</span>
-                    <span>40h (Machine)</span>
-                  </div>
                 </div>
               </motion.div>
             )}
