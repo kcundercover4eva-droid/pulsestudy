@@ -35,6 +35,30 @@ export default function ScheduleBuilder() {
 
   const [localBlocks, setLocalBlocks] = useState([]);
 
+  // Seeding Default Blocks
+  useEffect(() => {
+    if (!isLoading && dbBlocks && dbBlocks.length === 0) {
+      const seedBlocks = [];
+      const DAYS_INDICES = [0, 1, 2, 3, 4, 5, 6]; // Mon-Sun
+
+      // School: Mon(0) - Fri(4) from 8:00 to 15:00
+      [0, 1, 2, 3, 4].forEach(day => {
+        seedBlocks.push({ day, start: 8, end: 15, type: 'school', title: 'School' });
+      });
+
+      // Sleep: Every day 23:00-24:00 AND 00:00-06:00
+      DAYS_INDICES.forEach(day => {
+        // Late night part
+        seedBlocks.push({ day, start: 23, end: 24, type: 'sleep', title: 'Sleep' });
+        // Early morning part
+        seedBlocks.push({ day, start: 0, end: 6, type: 'sleep', title: 'Sleep' });
+      });
+
+      base44.entities.ScheduleBlock.bulkCreate(seedBlocks)
+        .then(() => queryClient.invalidateQueries(['scheduleBlocks']));
+    }
+  }, [dbBlocks, isLoading, queryClient]);
+
   // Keep ref in sync
   useEffect(() => {
     localBlocksRef.current = localBlocks;
@@ -175,7 +199,14 @@ export default function ScheduleBuilder() {
       // Persist changes using the ref to get the latest state
       const updatedBlock = localBlocksRef.current.find(b => b.id === dragState.blockId);
       if (updatedBlock) {
-        updateBlockMutation.mutate(updatedBlock);
+        // Ensure strictly typed numbers before sending
+        const payload = {
+            ...updatedBlock,
+            day: Number(updatedBlock.day),
+            start: Number(updatedBlock.start),
+            end: Number(updatedBlock.end)
+        };
+        updateBlockMutation.mutate(payload);
       }
       setDragState(null);
     };
