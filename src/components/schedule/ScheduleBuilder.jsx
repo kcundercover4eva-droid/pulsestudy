@@ -162,9 +162,32 @@ export default function ScheduleBuilder() {
 
   // --- EVENT HANDLERS ---
 
+  // Handle creating new blocks by dragging on empty grid
+  const handleGridPointerDown = (e, dayIndex) => {
+    // Only trigger if clicking directly on the grid cell, not children
+    if (e.target !== e.currentTarget) return;
+    
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+
+    // Calculate start time based on click position
+    const rect = e.currentTarget.getBoundingClientRect();
+    const relativeY = e.clientY - rect.top;
+    const rawStart = relativeY / PIXELS_PER_HOUR + (scrollRef.current?.scrollTop || 0) / PIXELS_PER_HOUR;
+    const snappedStart = Math.floor(rawStart / SNAP_DECIMAL) * SNAP_DECIMAL;
+
+    setDragState({
+      action: 'create',
+      day: dayIndex,
+      startY: e.clientY,
+      start: snappedStart,
+      end: snappedStart + (1 * SNAP_DECIMAL), // Initial 15 min block
+    });
+  };
+
   const handlePointerDown = (e, block, action) => {
     e.preventDefault();
-    e.stopPropagation();
+    e.stopPropagation(); // Prevent triggering grid creation
     e.currentTarget.setPointerCapture(e.pointerId);
     
     setDragState({
@@ -181,6 +204,23 @@ export default function ScheduleBuilder() {
     if (!dragState) return;
 
     const handlePointerMove = (e) => {
+      if (dragState.action === 'create') {
+        const deltaY = e.clientY - dragState.startY;
+        const deltaHours = deltaY / PIXELS_PER_HOUR;
+        
+        let newEnd = dragState.start + deltaHours;
+        
+        // Snap
+        newEnd = Math.round(newEnd / SNAP_DECIMAL) * SNAP_DECIMAL;
+        
+        // Min duration 15 mins
+        if (newEnd <= dragState.start + SNAP_DECIMAL) newEnd = dragState.start + SNAP_DECIMAL;
+        if (newEnd > 24) newEnd = 24;
+
+        setDragState(prev => ({ ...prev, end: newEnd }));
+        return;
+      }
+
       const deltaY = e.clientY - dragState.startY;
       const deltaHours = deltaY / PIXELS_PER_HOUR;
       
@@ -223,6 +263,19 @@ export default function ScheduleBuilder() {
     };
 
     const handlePointerUp = () => {
+      if (dragState.action === 'create') {
+        // Open dialog with drafted times
+        setNewBlock({
+          day: dragState.day,
+          start: dragState.start,
+          duration: dragState.end - dragState.start,
+          type: 'study' // Default
+        });
+        setIsDialogOpen(true);
+        setDragState(null);
+        return;
+      }
+
       // Persist changes using the ref to get the latest state
       const updatedBlock = localBlocksRef.current.find(b => b.id === dragState.blockId);
       if (updatedBlock) {
@@ -365,15 +418,34 @@ export default function ScheduleBuilder() {
 
             {/* Grid Columns */}
             {DAYS.map((_, dayIndex) => (
-              <div key={dayIndex} className="flex-1 border-r border-white/5 relative group">
+              <div 
+                key={dayIndex} 
+                className="flex-1 border-r border-white/5 relative group cursor-crosshair active:cursor-grabbing"
+                onPointerDown={(e) => handleGridPointerDown(e, dayIndex)}
+              >
                 {/* Hourly Lines */}
                 {HOURS.map(h => (
                    <div 
                     key={h} 
-                    className="absolute w-full border-b border-white/5" 
+                    className="absolute w-full border-b border-white/5 pointer-events-none" 
                     style={{ top: h * PIXELS_PER_HOUR }}
                    />
                 ))}
+
+                {/* Creation Ghost Block */}
+                {dragState?.action === 'create' && dragState.day === dayIndex && (
+                  <div
+                    className="absolute left-1 right-1 rounded-xl bg-cyan-500/30 border-2 border-cyan-400 border-dashed z-50 pointer-events-none flex items-center justify-center"
+                    style={{
+                      top: `${dragState.start * PIXELS_PER_HOUR}px`,
+                      height: `${(dragState.end - dragState.start) * PIXELS_PER_HOUR}px`,
+                    }}
+                  >
+                    <span className="text-xs font-bold text-white drop-shadow-md">
+                      {formatTime(dragState.start)} - {formatTime(dragState.end)}
+                    </span>
+                  </div>
+                )}
 
                 {/* Blocks */}
                 <AnimatePresence>
