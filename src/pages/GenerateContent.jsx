@@ -39,26 +39,43 @@ export default function GenerateContent() {
 
       // Generate content using AI
       const response = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are an AI study assistant. The user has uploaded study material. Your task is to extract the most important information and convert it into structured study tools.
+        prompt: `You are an AI study assistant. The user has uploaded study material. Your task is to extract ONLY the most important information and convert it into structured study tools.
 
-Follow these steps:
+Your output must include:
+1. Flashcards
+2. Notecards
+3. Quizzes (multiple choice, true/false, short answer)
 
-1. Read and understand the uploaded text.
-2. Identify key concepts, definitions, facts, and relationships.
-3. Generate:
-   - Flashcards (front/back)
-   - Notecards (topic + concise explanation)
-   - Quiz questions (multiple choice, true/false, short answer)
+GENERAL RULES
+• Use ONLY the information from the uploaded text.
+• Do NOT invent facts or add outside knowledge.
+• Prioritize clarity, accuracy, and usefulness.
+• Avoid long sentences or unnecessary detail.
+• Each item must contain ONE idea only.
+• Keep everything concise and easy to study.
 
-RULES:
-• Only use information from the uploaded text.
-• Do not invent facts.
-• Keep flashcards short and clear.
-• Keep notecards concise but informative.
-• Quiz questions must have correct answers included.
-• Output everything in the provided JSON format.
+FLASHCARDS (MEMORIZATION)
+Flashcards must:
+• Be short and direct.
+• Contain ONE concept per card.
+• Focus on definitions, key facts, formulas, and cause–effect.
+• Ignore filler text, examples, anecdotes, and minor details.
 
-Begin now. Use only the text provided.`,
+NOTECARDS (UNDERSTANDING)
+Notecards are NOT flashcards. They must:
+• Summarize broader concepts.
+• Use 2–4 clear sentences.
+• Explain ideas, processes, or relationships.
+• Avoid duplicating flashcard content.
+• Help the user understand the topic, not memorize it.
+
+QUIZZES (ASSESSMENT)
+Generate three types of quiz questions:
+1. Multiple Choice - 1 correct answer, 3 distractors, options labeled A, B, C, D
+2. True/False - Must be factual and unambiguous
+3. Short Answer - Require 1–2 sentence responses
+
+Begin now. Use ONLY the text provided.`,
         file_urls: [file_url],
         response_json_schema: {
           type: 'object',
