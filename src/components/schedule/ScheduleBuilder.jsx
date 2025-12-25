@@ -104,8 +104,8 @@ export default function ScheduleBuilder() {
   const [newBlock, setNewBlock] = useState({ day: 0, start: 16, duration: 1, type: 'study', title: '', color: '#10b981' });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleAddBlock = () => {
-    createBlockMutation.mutate({
+  const handleAddBlock = async () => {
+    await createBlockMutation.mutateAsync({
       day: parseInt(newBlock.day),
       start: parseFloat(newBlock.start),
       end: parseFloat(newBlock.start) + parseFloat(newBlock.duration),
@@ -398,15 +398,21 @@ export default function ScheduleBuilder() {
             
             {/* Time Column */}
             <div className="w-14 flex-shrink-0 border-r border-white/10 bg-black/20 sticky left-0 z-10">
-              {HOURS.map(h => (
-                <div 
-                  key={h} 
-                  className="absolute w-full text-right pr-2 text-xs text-white/40 font-mono"
-                  style={{ top: h * PIXELS_PER_HOUR - 8 }}
-                >
-                  {h}:00
-                </div>
-              ))}
+              {HOURS.map(h => {
+                let displayHour = h;
+                if (is12Hour) {
+                  displayHour = h === 0 ? 12 : h > 12 ? h - 12 : h;
+                }
+                return (
+                  <div 
+                    key={h} 
+                    className="absolute w-full text-right pr-2 text-xs text-white/40 font-mono"
+                    style={{ top: h * PIXELS_PER_HOUR - 8 }}
+                  >
+                    {displayHour}:00
+                  </div>
+                );
+              })}
             </div>
 
             {/* Grid Columns */}
