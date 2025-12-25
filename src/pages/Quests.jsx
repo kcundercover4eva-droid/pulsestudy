@@ -7,12 +7,20 @@ import { Button } from '@/components/ui/button';
 import { Target, Swords, Trophy, Plus } from 'lucide-react';
 import QuestCard from '../components/quests/QuestCard';
 import BossCard from '../components/quests/BossCard';
-import { useRewards } from '../components/rewards/RewardsProvider.jsx';
 import { toast } from 'sonner';
 
 export default function Quests() {
   const queryClient = useQueryClient();
-  const { userProfile, awardEvolutionPoints, triggerBossMilestone } = useRewards();
+  
+  // Fetch user profile
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile'],
+    queryFn: async () => {
+      const user = await base44.auth.me();
+      const profiles = await base44.entities.UserProfile.filter({ created_by: user.email });
+      return profiles[0];
+    },
+  });
 
   // Update profile mutation
   const updateProfileMutation = useMutation({
@@ -65,9 +73,12 @@ export default function Quests() {
       data: updates,
     });
 
-    // Award evolution points
-    if (quest.rewards.evolutionPoints) {
-      await awardEvolutionPoints(quest.rewards.evolutionPoints);
+    // Award evolution points if applicable
+    if (quest.rewards.evolutionPoints && userProfile.evolutionPoints !== undefined) {
+      await updateProfileMutation.mutateAsync({
+        id: userProfile.id,
+        data: { evolutionPoints: (userProfile.evolutionPoints || 0) + quest.rewards.evolutionPoints },
+      });
     }
 
     // Mark as claimed
@@ -95,12 +106,17 @@ export default function Quests() {
     });
 
     if (success) {
-      // Trigger milestone reward
-      await triggerBossMilestone({
-        name: boss.name,
-        attempts: (boss.attempts || 0) + 1,
-        timeSpent,
-      });
+      // Award boss rewards
+      if (userProfile && boss.rewards) {
+        const updates = {
+          totalPoints: (userProfile.totalPoints || 0) + (boss.rewards.xp || 0),
+          currency: (userProfile.currency || 0) + (boss.rewards.currency || 0),
+        };
+        await updateProfileMutation.mutateAsync({
+          id: userProfile.id,
+          data: updates,
+        });
+      }
 
       toast.success(`${boss.name} defeated! 🏆`);
     } else {
