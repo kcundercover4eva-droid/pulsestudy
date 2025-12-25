@@ -34,24 +34,26 @@ export default function ScheduleBuilder() {
   });
 
   const [localBlocks, setLocalBlocks] = useState([]);
+  const [isCreationMode, setIsCreationMode] = useState(false);
+  const [is12Hour, setIs12Hour] = useState(false);
+  const [editingBlockId, setEditingBlockId] = useState(null);
+  const [editingTitle, setEditingTitle] = useState('');
 
-  // Seeding Default Blocks
+  // Seeding Default Blocks - School 8am-3pm Mon-Fri, Sleep 10pm-6am all days
   useEffect(() => {
     if (!isLoading && dbBlocks && dbBlocks.length === 0) {
       const seedBlocks = [];
       const DAYS_INDICES = [0, 1, 2, 3, 4, 5, 6]; // Mon-Sun
 
-      // School: Mon(0) - Fri(4) from 8:00 to 15:00
+      // School: Mon(0) - Fri(4) from 8:00 to 15:00 (3pm)
       [0, 1, 2, 3, 4].forEach(day => {
-        seedBlocks.push({ day, start: 8, end: 15, type: 'school', title: 'School' });
+        seedBlocks.push({ day, start: 8, end: 15, type: 'school', title: 'School', color: '#3b82f6' });
       });
 
-      // Sleep: Every day 23:00-24:00 AND 00:00-06:00
+      // Sleep: Every day 22:00-24:00 (10pm-midnight) AND 00:00-06:00 (midnight-6am)
       DAYS_INDICES.forEach(day => {
-        // Late night part
-        seedBlocks.push({ day, start: 23, end: 24, type: 'sleep', title: 'Sleep' });
-        // Early morning part
-        seedBlocks.push({ day, start: 0, end: 6, type: 'sleep', title: 'Sleep' });
+        seedBlocks.push({ day, start: 22, end: 24, type: 'sleep', title: 'Sleep', color: '#8b5cf6' });
+        seedBlocks.push({ day, start: 0, end: 6, type: 'sleep', title: 'Sleep', color: '#8b5cf6' });
       });
 
       base44.entities.ScheduleBlock.bulkCreate(seedBlocks)
@@ -77,7 +79,8 @@ export default function ScheduleBuilder() {
           start: typeof data.start === 'number' ? data.start : Number(data.start ?? 16),
           end: typeof data.end === 'number' ? data.end : Number(data.end ?? 17),
           type: data.type || 'study',
-          title: data.title || ''
+          title: data.title || '',
+          color: data.color || '#10b981'
         };
       }));
     }
@@ -98,7 +101,7 @@ export default function ScheduleBuilder() {
   });
 
   // --- NEW BLOCK FORM ---
-  const [newBlock, setNewBlock] = useState({ day: 0, start: 16, duration: 1, type: 'study' });
+  const [newBlock, setNewBlock] = useState({ day: 0, start: 16, duration: 1, type: 'study', title: '', color: '#10b981' });
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleAddBlock = () => {
@@ -107,9 +110,11 @@ export default function ScheduleBuilder() {
       start: parseFloat(newBlock.start),
       end: parseFloat(newBlock.start) + parseFloat(newBlock.duration),
       type: newBlock.type,
-      title: newBlock.title || newBlock.type.charAt(0).toUpperCase() + newBlock.type.slice(1)
+      title: newBlock.title || 'New Block',
+      color: newBlock.color
     });
     setIsDialogOpen(false);
+    setIsCreationMode(false);
   };
 
   const handleResetDefaults = async () => {
@@ -123,15 +128,15 @@ export default function ScheduleBuilder() {
         const seedBlocks = [];
         const DAYS_INDICES = [0, 1, 2, 3, 4, 5, 6]; 
 
-        // School: Mon(0) - Fri(4) from 8:00 to 15:00
+        // School: Mon(0) - Fri(4) from 8:00 to 15:00 (3pm)
         [0, 1, 2, 3, 4].forEach(day => {
-            seedBlocks.push({ day, start: 8, end: 15, type: 'school', title: 'School' });
+            seedBlocks.push({ day, start: 8, end: 15, type: 'school', title: 'School', color: '#3b82f6' });
         });
 
-        // Sleep: Every day 23:00-24:00 AND 00:00-06:00
+        // Sleep: Every day 22:00-24:00 (10pm-midnight) AND 00:00-06:00
         DAYS_INDICES.forEach(day => {
-            seedBlocks.push({ day, start: 23, end: 24, type: 'sleep', title: 'Sleep' });
-            seedBlocks.push({ day, start: 0, end: 6, type: 'sleep', title: 'Sleep' });
+            seedBlocks.push({ day, start: 22, end: 24, type: 'sleep', title: 'Sleep', color: '#8b5cf6' });
+            seedBlocks.push({ day, start: 0, end: 6, type: 'sleep', title: 'Sleep', color: '#8b5cf6' });
         });
 
         await base44.entities.ScheduleBlock.bulkCreate(seedBlocks);
@@ -147,24 +152,21 @@ export default function ScheduleBuilder() {
   const formatTime = (decimalTime) => {
     const hours = Math.floor(decimalTime);
     const minutes = Math.round((decimalTime - hours) * 60);
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-  };
-
-  const getBlockStyle = (type) => {
-    switch (type) {
-      case 'school': return 'bg-blue-500/20 border-blue-500/50 text-blue-300 hover:bg-blue-500/30';
-      case 'sleep': return 'bg-purple-900/40 border-purple-500/30 text-purple-300 hover:bg-purple-900/50';
-      case 'study': return 'bg-green-500/20 border-green-500/50 text-green-300 hover:bg-green-500/30';
-      case 'extracurricular': return 'bg-orange-500/20 border-orange-500/50 text-orange-300 hover:bg-orange-500/30';
-      default: return 'bg-white/10 hover:bg-white/20';
+    
+    if (is12Hour) {
+      const period = hours >= 12 ? 'PM' : 'AM';
+      const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+      return `${displayHour}:${minutes.toString().padStart(2, '0')} ${period}`;
     }
+    
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
   };
 
   // --- EVENT HANDLERS ---
 
   // Handle creating new blocks by dragging on empty grid
   const handleGridPointerDown = (e, dayIndex) => {
-    // Only trigger if clicking directly on the grid cell, not children
+    if (!isCreationMode) return; // Only allow creation when in creation mode
     if (e.target !== e.currentTarget) return;
     
     e.preventDefault();
@@ -269,7 +271,9 @@ export default function ScheduleBuilder() {
           day: dragState.day,
           start: dragState.start,
           duration: dragState.end - dragState.start,
-          type: 'study' // Default
+          type: 'study',
+          title: '',
+          color: '#10b981'
         });
         setIsDialogOpen(true);
         setDragState(null);
@@ -309,7 +313,16 @@ export default function ScheduleBuilder() {
           <p className="text-white/40 text-sm">Drag to resize. Plan your perfect week.</p>
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+            <label className="flex items-center gap-2 text-sm text-white/60 cursor-pointer">
+              <input 
+                type="checkbox" 
+                checked={is12Hour} 
+                onChange={(e) => setIs12Hour(e.target.checked)}
+                className="rounded"
+              />
+              12-Hour
+            </label>
             <Button 
                 variant="outline" 
                 onClick={handleResetDefaults}
@@ -317,64 +330,44 @@ export default function ScheduleBuilder() {
             >
                 <RotateCcw className="w-4 h-4 mr-2" /> Reset
             </Button>
+            <Button 
+              onClick={() => setIsCreationMode(!isCreationMode)}
+              className={`font-bold rounded-xl ${isCreationMode ? 'bg-orange-500 hover:bg-orange-600' : 'bg-cyan-500 hover:bg-cyan-600'} text-black shadow-[0_0_15px_rgba(6,182,212,0.5)]`}
+            >
+              <Plus className="w-4 h-4 mr-2" /> {isCreationMode ? 'Cancel' : 'Add Block'}
+            </Button>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-                <Button className="bg-cyan-500 hover:bg-cyan-600 text-black font-bold rounded-xl shadow-[0_0_15px_rgba(6,182,212,0.5)]">
-                <Plus className="w-4 h-4 mr-2" /> Add Block
-                </Button>
-            </DialogTrigger>
           <DialogContent className="glass bg-slate-900/90 text-white border-white/10">
             <DialogHeader>
-              <DialogTitle>Add Schedule Block</DialogTitle>
+              <DialogTitle>Name Your Block</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="block-type">Type</Label>
-                <Select onValueChange={(v) => setNewBlock({...newBlock, type: v})} defaultValue="study">
-                  <SelectTrigger id="block-type" className="bg-white/5 border-white/10">
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="school">School</SelectItem>
-                    <SelectItem value="sleep">Sleep</SelectItem>
-                    <SelectItem value="study">Study Session</SelectItem>
-                    <SelectItem value="extracurricular">Extracurricular</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                 <div className="grid gap-2">
-                    <Label htmlFor="block-day">Day</Label>
-                    <Select onValueChange={(v) => setNewBlock({...newBlock, day: v})} defaultValue="0">
-                      <SelectTrigger id="block-day" className="bg-white/5 border-white/10">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {DAYS.map((d, i) => <SelectItem key={i} value={i.toString()}>{d}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                 </div>
-                 <div className="grid gap-2">
-                    <Label htmlFor="block-start">Start Time</Label>
-                    <Select onValueChange={(v) => setNewBlock({...newBlock, start: v})} defaultValue="16">
-                      <SelectTrigger id="block-start" className="bg-white/5 border-white/10">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {HOURS.slice(0,24).map((h) => <SelectItem key={h} value={h.toString()}>{h}:00</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                 </div>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="block-duration">Duration (hours)</Label>
+                <Label htmlFor="block-title">Block Name</Label>
                 <Input 
-                   id="block-duration"
-                   type="number" 
-                   value={newBlock.duration} 
-                   onChange={(e) => setNewBlock({...newBlock, duration: e.target.value})}
+                   id="block-title"
+                   type="text" 
+                   placeholder="e.g., Math Study, Workout, etc."
+                   value={newBlock.title} 
+                   onChange={(e) => setNewBlock({...newBlock, title: e.target.value})}
                    className="bg-white/5 border-white/10"
                 />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="block-color">Block Color</Label>
+                <div className="flex gap-2">
+                  {['#ef4444', '#f97316', '#eab308', '#22c55e', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899'].map(color => (
+                    <button
+                      key={color}
+                      onClick={() => setNewBlock({...newBlock, color})}
+                      className={`w-10 h-10 rounded-lg transition-all ${newBlock.color === color ? 'ring-2 ring-white scale-110' : ''}`}
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="text-xs text-white/40">
+                Time: {formatTime(newBlock.start)} - {formatTime(newBlock.start + newBlock.duration)} ({newBlock.duration}h)
               </div>
             </div>
             <Button onClick={handleAddBlock} className="w-full bg-cyan-500 text-black font-bold">Save Block</Button>
@@ -420,25 +413,34 @@ export default function ScheduleBuilder() {
             {DAYS.map((_, dayIndex) => (
               <div 
                 key={dayIndex} 
-                className="flex-1 border-r border-white/5 relative group cursor-crosshair active:cursor-grabbing"
+                className={`flex-1 border-r border-white/5 relative group ${isCreationMode ? 'cursor-crosshair' : ''}`}
                 onPointerDown={(e) => handleGridPointerDown(e, dayIndex)}
               >
                 {/* Hourly Lines */}
                 {HOURS.map(h => (
                    <div 
                     key={h} 
-                    className="absolute w-full border-b border-white/5 pointer-events-none" 
+                    className={`absolute w-full pointer-events-none ${h === 12 && is12Hour ? 'border-b-2 border-dashed border-cyan-400/50' : 'border-b border-white/5'}`}
                     style={{ top: h * PIXELS_PER_HOUR }}
                    />
                 ))}
 
+                {/* AM/PM Label */}
+                {is12Hour && (
+                  <>
+                    <div className="absolute left-2 text-[10px] text-white/30 font-bold" style={{ top: 2 }}>AM</div>
+                    <div className="absolute left-2 text-[10px] text-white/30 font-bold" style={{ top: 12 * PIXELS_PER_HOUR + 2 }}>PM</div>
+                  </>
+                )}
+
                 {/* Creation Ghost Block */}
                 {dragState?.action === 'create' && dragState.day === dayIndex && (
                   <div
-                    className="absolute left-1 right-1 rounded-xl bg-cyan-500/30 border-2 border-cyan-400 border-dashed z-50 pointer-events-none flex items-center justify-center"
+                    className="absolute left-1 right-1 rounded-xl border-2 border-cyan-400 border-dashed z-50 pointer-events-none flex items-center justify-center"
                     style={{
                       top: `${dragState.start * PIXELS_PER_HOUR}px`,
                       height: `${(dragState.end - dragState.start) * PIXELS_PER_HOUR}px`,
+                      backgroundColor: newBlock.color + '80'
                     }}
                   >
                     <span className="text-xs font-bold text-white drop-shadow-md">
@@ -459,46 +461,71 @@ export default function ScheduleBuilder() {
                         scale: 1,
                         zIndex: dragState?.blockId === block.id ? 50 : 1
                       }}
-                      className={`absolute left-1 right-1 rounded-xl border backdrop-blur-md overflow-hidden select-none touch-none ${getBlockStyle(block.type)} ${dragState?.blockId === block.id ? 'shadow-[0_0_20px_rgba(255,255,255,0.2)] ring-1 ring-white/50' : ''}`}
+                      className={`absolute left-1 right-1 rounded-xl border-2 overflow-hidden select-none touch-none ${dragState?.blockId === block.id ? 'shadow-[0_0_20px_rgba(255,255,255,0.2)] ring-2 ring-white/50' : ''}`}
                       style={{
                         top: `${block.start * PIXELS_PER_HOUR}px`,
                         height: `${(block.end - block.start) * PIXELS_PER_HOUR}px`,
+                        backgroundColor: block.color || '#10b981',
+                        borderColor: block.color || '#10b981'
                       }}
                     >
                       {/* Top Handle */}
                       <div 
-                        className="absolute top-0 left-0 right-0 h-4 cursor-ns-resize flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-white/10 z-20"
+                        className="absolute top-0 left-0 right-0 h-4 cursor-ns-resize flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/20 z-20"
                         onPointerDown={(e) => handlePointerDown(e, block, 'resize-top')}
                       >
-                         <div className="w-8 h-1 rounded-full bg-white/50" />
+                         <div className="w-8 h-1 rounded-full bg-white/70" />
                       </div>
 
                       {/* Content / Move Handle */}
                       <div 
                         className="w-full h-full p-2 flex flex-col cursor-move"
                         onPointerDown={(e) => handlePointerDown(e, block, 'move')}
+                        onDoubleClick={() => {
+                          setEditingBlockId(block.id);
+                          setEditingTitle(block.title);
+                        }}
                       >
-                         <div className="font-bold text-xs truncate">{block.type}</div>
-                         <div className="text-[10px] opacity-70 font-mono">
+                         {editingBlockId === block.id ? (
+                           <input
+                             autoFocus
+                             value={editingTitle}
+                             onChange={(e) => setEditingTitle(e.target.value)}
+                             onBlur={() => {
+                               updateBlockMutation.mutate({ ...block, title: editingTitle });
+                               setEditingBlockId(null);
+                             }}
+                             onKeyDown={(e) => {
+                               if (e.key === 'Enter') {
+                                 updateBlockMutation.mutate({ ...block, title: editingTitle });
+                                 setEditingBlockId(null);
+                               }
+                             }}
+                             className="bg-white/20 text-white font-bold text-xs px-1 py-0.5 rounded border-none outline-none w-full"
+                           />
+                         ) : (
+                           <div className="font-bold text-xs truncate text-white">{block.title}</div>
+                         )}
+                         <div className="text-[10px] opacity-70 font-mono text-white">
                            {formatTime(block.start)} - {formatTime(block.end)}
                          </div>
                       </div>
 
                       {/* Bottom Handle */}
                       <div 
-                        className="absolute bottom-0 left-0 right-0 h-4 cursor-ns-resize flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-white/10 z-20"
+                        className="absolute bottom-0 left-0 right-0 h-4 cursor-ns-resize flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/20 z-20"
                         onPointerDown={(e) => handlePointerDown(e, block, 'resize-bottom')}
                       >
-                        <div className="w-8 h-1 rounded-full bg-white/50" />
+                        <div className="w-8 h-1 rounded-full bg-white/70" />
                       </div>
 
                       {/* Floating Tooltip during drag */}
                       {dragState?.blockId === block.id && (
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/80 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap z-50 pointer-events-none">
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/90 text-white text-xs px-3 py-2 rounded-lg shadow-2xl whitespace-nowrap z-50 pointer-events-none border border-white/20">
                           <Clock className="w-3 h-3 inline mr-1" />
                           {formatTime(block.start)} - {formatTime(block.end)}
-                          <div className="text-[10px] text-white/50 text-center">
-                            {(block.end - block.start).toFixed(2)}h
+                          <div className="text-[10px] text-white/70 text-center mt-0.5">
+                            {((block.end - block.start)).toFixed(2)}h
                           </div>
                         </div>
                       )}
