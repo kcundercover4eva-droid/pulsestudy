@@ -2,6 +2,7 @@ import Home from './pages/Home';
 import Quests from './pages/Quests';
 import Leaderboard from './pages/Leaderboard';
 import Profile from './pages/Profile';
+import Shop from './pages/Shop';
 
 
 export const PAGES = {
@@ -9,6 +10,7 @@ export const PAGES = {
     "Quests": Quests,
     "Leaderboard": Leaderboard,
     "Profile": Profile,
+    "Shop": Shop,
 }
 
 export const pagesConfig = {
