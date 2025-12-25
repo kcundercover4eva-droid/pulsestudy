@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Target, Swords, Trophy, Plus } from 'lucide-react';
 import QuestCard from '../components/quests/QuestCard';
 import BossCard from '../components/quests/BossCard';
-import { useRewards } from '../components/rewards/RewardsProvider';
+import { useRewards } from '../components/rewards/RewardsProvider.jsx';
 import { toast } from 'sonner';
 
 export default function Quests() {
