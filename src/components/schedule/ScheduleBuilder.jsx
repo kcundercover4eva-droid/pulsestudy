@@ -249,7 +249,23 @@ export default function ScheduleBuilder() {
 
       // Get the block being dragged
       const currentBlock = localBlocksRef.current.find(b => b.id === dragState.blockId);
-      const minDuration = currentBlock?.type === 'sleep' ? 5 : SNAP_DECIMAL;
+      let minDuration = SNAP_DECIMAL;
+
+      // For sleep blocks, calculate cumulative sleep for the day
+      if (currentBlock?.type === 'sleep') {
+        const otherSleepBlocks = localBlocksRef.current.filter(
+          b => b.day === currentBlock.day && b.type === 'sleep' && b.id !== dragState.blockId
+        );
+        const otherSleepTotal = otherSleepBlocks.reduce((sum, b) => sum + (b.end - b.start), 0);
+        const proposedDuration = newEnd - newStart;
+        const totalSleep = otherSleepTotal + proposedDuration;
+
+        // If total sleep would be less than 5 hours, enforce minimum on this block
+        if (totalSleep < 5) {
+          minDuration = 5 - otherSleepTotal;
+          if (minDuration < SNAP_DECIMAL) minDuration = SNAP_DECIMAL;
+        }
+      }
 
       // Constraints
       if (dragState.action === 'resize-bottom') {
