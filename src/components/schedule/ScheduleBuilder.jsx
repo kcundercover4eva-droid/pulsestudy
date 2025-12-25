@@ -250,6 +250,7 @@ export default function ScheduleBuilder() {
       // Get the block being dragged
       const currentBlock = localBlocksRef.current.find(b => b.id === dragState.blockId);
       let minDuration = SNAP_DECIMAL;
+      let maxDuration = 24;
 
       // For sleep blocks, calculate cumulative sleep for the day
       if (currentBlock?.type === 'sleep') {
@@ -265,14 +266,22 @@ export default function ScheduleBuilder() {
           minDuration = 5 - otherSleepTotal;
           if (minDuration < SNAP_DECIMAL) minDuration = SNAP_DECIMAL;
         }
+
+        // If total sleep would exceed 10 hours, cap this block's duration
+        if (totalSleep > 10) {
+          maxDuration = 10 - otherSleepTotal;
+          if (maxDuration < minDuration) maxDuration = minDuration;
+        }
       }
 
       // Constraints
       if (dragState.action === 'resize-bottom') {
         if (newEnd <= newStart + minDuration) newEnd = newStart + minDuration;
+        if (newEnd >= newStart + maxDuration) newEnd = newStart + maxDuration;
         if (newEnd > 24) newEnd = 24;
       } else if (dragState.action === 'resize-top') {
         if (newStart >= newEnd - minDuration) newStart = newEnd - minDuration;
+        if (newStart <= newEnd - maxDuration) newStart = newEnd - maxDuration;
         if (newStart < 0) newStart = 0;
       } else if (dragState.action === 'move') {
         const duration = newEnd - newStart;
