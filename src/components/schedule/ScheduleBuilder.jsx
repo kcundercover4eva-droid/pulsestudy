@@ -83,11 +83,20 @@ export default function ScheduleBuilder() {
 
   const updateBlockMutation = useMutation({
     mutationFn: (block) => {
-      // Create a clean data object without the ID or other potential metadata
+      console.log('Updating block:', block);
       const { id, ...data } = block;
-      return base44.entities.ScheduleBlock.update(id, data);
+      return base44.entities.ScheduleBlock.update(id, {
+        day: Number(data.day),
+        start: Number(data.start),
+        end: Number(data.end),
+        type: data.type,
+        title: data.title,
+        color: data.color
+      });
     },
-    onSuccess: () => queryClient.invalidateQueries(['scheduleBlocks']),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['scheduleBlocks']);
+    },
   });
   
   const createBlockMutation = useMutation({
