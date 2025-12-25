@@ -42,95 +42,113 @@ export default function GenerateContent() {
         prompt: `You are an AI study assistant. The user has uploaded study material. Your task is to extract ONLY the most important information and convert it into structured study tools.
 
 Your output must include:
-1. Flashcards
-2. Notecards
-3. Quizzes (multiple choice, true/false, short answer)
+1. Flashcard sets (SEPARATED BY TOPIC)
+2. Notecards (SEPARATED BY TOPIC)
+3. Quizzes (SEPARATED BY TOPIC)
 
-GENERAL RULES
+CRITICAL RULES
+• DO NOT combine flashcards and quizzes together.
+• DO NOT mix topics. Each topic must have its own flashcard set, notecard set, and quiz set.
+• DO NOT create one giant set. Automatically detect distinct topics and separate them.
 • Use ONLY the information from the uploaded text.
-• Do NOT invent facts or add outside knowledge.
-• Prioritize clarity, accuracy, and usefulness.
-• Avoid long sentences or unnecessary detail.
-• Each item must contain ONE idea only.
+• Do NOT invent facts.
 • Keep everything concise and easy to study.
 
-FLASHCARDS (MEMORIZATION)
+TOPIC DETECTION
+Before generating any study materials:
+1. Identify the major topics or sections in the uploaded text.
+2. Treat each topic as its own independent study module.
+3. For each topic, generate:
+   - Flashcards
+   - Notecards
+   - Quizzes
+
+FLASHCARDS (PER TOPIC)
 Flashcards must:
 • Be short and direct.
 • Contain ONE concept per card.
 • Focus on definitions, key facts, formulas, and cause–effect.
-• Ignore filler text, examples, anecdotes, and minor details.
+• Stay within the topic they belong to.
 
-NOTECARDS (UNDERSTANDING)
-Notecards are NOT flashcards. They must:
+NOTECARDS (PER TOPIC)
+Notecards must:
 • Summarize broader concepts.
 • Use 2–4 clear sentences.
 • Explain ideas, processes, or relationships.
-• Avoid duplicating flashcard content.
-• Help the user understand the topic, not memorize it.
+• Avoid duplicating flashcards.
+• Stay within the topic they belong to.
 
-QUIZZES (ASSESSMENT)
-Generate three types of quiz questions:
-1. Multiple Choice - 1 correct answer, 3 distractors, options labeled A, B, C, D
-2. True/False - Must be factual and unambiguous
-3. Short Answer - Require 1–2 sentence responses
+QUIZZES (PER TOPIC)
+Generate three types of quiz questions for EACH topic:
+1. Multiple Choice (MCQ)
+2. True/False
+3. Short Answer
 
 Begin now. Use ONLY the text provided.`,
         file_urls: [file_url],
         response_json_schema: {
           type: 'object',
           properties: {
-            flashcards: {
+            topics: {
               type: 'array',
               items: {
                 type: 'object',
                 properties: {
-                  front: { type: 'string' },
-                  back: { type: 'string' }
-                }
-              }
-            },
-            notecards: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  topic: { type: 'string' },
-                  summary: { type: 'string' }
-                }
-              }
-            },
-            quizzes: {
-              type: 'object',
-              properties: {
-                multiple_choice: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      question: { type: 'string' },
-                      options: { type: 'array', items: { type: 'string' } },
-                      answer: { type: 'string' }
+                  topic_name: { type: 'string' },
+                  flashcards: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        front: { type: 'string' },
+                        back: { type: 'string' }
+                      }
                     }
-                  }
-                },
-                true_false: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      statement: { type: 'string' },
-                      answer: { type: 'boolean' }
+                  },
+                  notecards: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        topic: { type: 'string' },
+                        summary: { type: 'string' }
+                      }
                     }
-                  }
-                },
-                short_answer: {
-                  type: 'array',
-                  items: {
+                  },
+                  quizzes: {
                     type: 'object',
                     properties: {
-                      question: { type: 'string' },
-                      answer: { type: 'string' }
+                      multiple_choice: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            question: { type: 'string' },
+                            options: { type: 'array', items: { type: 'string' } },
+                            answer: { type: 'string' }
+                          }
+                        }
+                      },
+                      true_false: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            statement: { type: 'string' },
+                            answer: { type: 'boolean' }
+                          }
+                        }
+                      },
+                      short_answer: {
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            question: { type: 'string' },
+                            answer: { type: 'string' }
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -140,67 +158,77 @@ Begin now. Use ONLY the text provided.`,
         }
       });
 
-      // Create flashcards
-      const flashcards = response.flashcards?.map(fc => ({
-        question: fc.front,
-        answer: fc.back,
-        subject,
-        masteryLevel: 0,
-      })) || [];
-      
-      if (flashcards.length > 0) {
-        await base44.entities.Flashcard.bulkCreate(flashcards);
+      // Process all topics and create content
+      const allFlashcards = [];
+      const allNotecards = [];
+      const allQuizzes = [];
+
+      response.topics?.forEach(topic => {
+        // Create flashcards from this topic
+        topic.flashcards?.forEach(fc => {
+          allFlashcards.push({
+            question: fc.front,
+            answer: fc.back,
+            subject,
+            masteryLevel: 0,
+          });
+        });
+
+        // Create notecards from this topic
+        topic.notecards?.forEach(nc => {
+          allNotecards.push({
+            topic: nc.topic,
+            summary: nc.summary,
+            subject,
+            sourceId: material.id,
+          });
+        });
+
+        // Create quizzes from this topic
+        topic.quizzes?.multiple_choice?.forEach(q => {
+          allQuizzes.push({
+            question: q.question,
+            type: 'multiple_choice',
+            options: q.options,
+            answer: q.answer,
+            subject,
+            sourceId: material.id,
+          });
+        });
+
+        topic.quizzes?.true_false?.forEach(q => {
+          allQuizzes.push({
+            question: q.statement,
+            type: 'true_false',
+            options: ['True', 'False'],
+            answer: q.answer ? 'True' : 'False',
+            subject,
+            sourceId: material.id,
+          });
+        });
+
+        topic.quizzes?.short_answer?.forEach(q => {
+          allQuizzes.push({
+            question: q.question,
+            type: 'short_answer',
+            answer: q.answer,
+            subject,
+            sourceId: material.id,
+          });
+        });
+      });
+
+      // Bulk create all content
+      if (allFlashcards.length > 0) {
+        await base44.entities.Flashcard.bulkCreate(allFlashcards);
       }
 
-      // Create notecards
-      const notecards = response.notecards?.map(nc => ({
-        topic: nc.topic,
-        summary: nc.summary,
-        subject,
-        sourceId: material.id,
-      })) || [];
-      
-      if (notecards.length > 0) {
-        await base44.entities.Notecard.bulkCreate(notecards);
+      if (allNotecards.length > 0) {
+        await base44.entities.Notecard.bulkCreate(allNotecards);
       }
 
-      // Create quizzes
-      const quizzes = [];
-      
-      response.quizzes?.multiple_choice?.forEach(q => {
-        quizzes.push({
-          question: q.question,
-          type: 'multiple_choice',
-          options: q.options,
-          answer: q.answer,
-          subject,
-          sourceId: material.id,
-        });
-      });
-
-      response.quizzes?.true_false?.forEach(q => {
-        quizzes.push({
-          question: q.statement,
-          type: 'true_false',
-          options: ['True', 'False'],
-          answer: q.answer ? 'True' : 'False',
-          subject,
-          sourceId: material.id,
-        });
-      });
-
-      response.quizzes?.short_answer?.forEach(q => {
-        quizzes.push({
-          question: q.question,
-          type: 'short_answer',
-          answer: q.answer,
-          subject,
-          sourceId: material.id,
-        });
-      });
-
-      if (quizzes.length > 0) {
-        await base44.entities.Quiz.bulkCreate(quizzes);
+      if (allQuizzes.length > 0) {
+        await base44.entities.Quiz.bulkCreate(allQuizzes);
       }
 
       // Update material status
