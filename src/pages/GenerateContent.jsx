@@ -220,6 +220,9 @@ Begin now. Use ONLY the text provided.`,
       });
 
       // Bulk create all content
+      console.log('Creating flashcards:', allFlashcards);
+      console.log('Material ID:', material.id);
+      
       if (allFlashcards.length > 0) {
         await base44.entities.Flashcard.bulkCreate(allFlashcards);
       }

@@ -29,10 +29,21 @@ export default function DeckManager({ onSelectDeck, onBack }) {
       const materials = await base44.entities.StudyMaterial.filter({ created_by: user.email }, '-created_date');
       // Fetch flashcard counts for each deck
       const allFlashcards = await base44.entities.Flashcard.filter({ created_by: user.email });
-      return materials.map(deck => ({
-        ...deck,
-        flashcardCount: allFlashcards.filter(f => f.sourceId === deck.id).length
-      }));
+      
+      console.log('DeckManager - Materials:', materials);
+      console.log('DeckManager - All Flashcards:', allFlashcards);
+      
+      const decksWithCounts = materials.map(deck => {
+        const count = allFlashcards.filter(f => f.sourceId === deck.id).length;
+        console.log(`Deck "${deck.title}" (${deck.id}): ${count} flashcards`);
+        return {
+          ...deck,
+          flashcardCount: count
+        };
+      });
+      
+      console.log('DeckManager - Final decks:', decksWithCounts);
+      return decksWithCounts;
     },
   });
 
