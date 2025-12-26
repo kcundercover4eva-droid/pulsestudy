@@ -16,7 +16,9 @@ import {
   Flame,
   Calendar as CalendarIcon,
   MessageSquare,
-  Shield
+  Shield,
+  Settings,
+  X
 } from 'lucide-react';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
@@ -529,6 +531,12 @@ export default function Dashboard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['userProfile']);
+    },
+  });
+
+  const createSessionMutation = useMutation({
+    mutationFn: async (sessionData) => {
+      return await base44.entities.FocusSession.create(sessionData);
     },
   });
 
