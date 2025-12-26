@@ -194,17 +194,20 @@ export default function ScheduleBuilder() {
     e.preventDefault();
     e.stopPropagation(); // Prevent triggering grid creation
     
+    // Capture pointer immediately (before setTimeout)
+    e.currentTarget.setPointerCapture(e.pointerId);
+    
     // Press-and-hold for resize handles
     if (action === 'resize-top' || action === 'resize-bottom') {
+      const startY = e.clientY;
       const timer = setTimeout(() => {
         haptics.medium();
         setActiveHandle(action === 'resize-top' ? 'top' : 'bottom');
-        e.currentTarget.setPointerCapture(e.pointerId);
         
         setDragState({
           blockId: block.id,
           action,
-          startY: e.clientY,
+          startY,
           originalStart: block.start,
           originalEnd: block.end,
           day: block.day
@@ -214,7 +217,6 @@ export default function ScheduleBuilder() {
       setPressHoldTimer(timer);
     } else {
       // Immediate drag for move
-      e.currentTarget.setPointerCapture(e.pointerId);
       haptics.light();
       
       setDragState({
