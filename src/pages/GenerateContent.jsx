@@ -328,23 +328,6 @@ Begin now. Use ONLY the text provided.`,
             </div>
 
             <div>
-              <Label className="text-white">Add to Deck (Optional)</Label>
-              <Select value={selectedDeckId} onValueChange={setSelectedDeckId} disabled={generateMutation.isPending}>
-                <SelectTrigger className="bg-slate-900 border-slate-700 text-white">
-                  <SelectValue placeholder="No deck (create later)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={null}>No deck</SelectItem>
-                  {decks.map(deck => (
-                    <SelectItem key={deck.id} value={deck.id}>
-                      {deck.name} ({deck.cardCount || 0} cards)
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
               <Label className="text-white">Upload File</Label>
               <div className="mt-2">
                 <label className="flex items-center justify-center gap-2 bg-slate-900 border-2 border-dashed border-slate-700 rounded-lg p-8 cursor-pointer hover:border-purple-500 transition-colors">
