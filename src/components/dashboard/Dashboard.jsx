@@ -16,7 +16,9 @@ import {
   Flame,
   Calendar as CalendarIcon,
   MessageSquare,
-  Shield
+  Shield,
+  Settings,
+  X
 } from 'lucide-react';
 import { createPageUrl } from '@/utils';
 import { base44 } from '@/api/base44Client';
@@ -43,11 +45,35 @@ const StatCard = ({ title, value, icon: Icon, color, trend }) => (
   </div>
 );
 
-const FocusTimer = ({ accentColor }) => {
+const FocusTimer = ({ accentColor, userProfile, updateProfileMutation, createSessionMutation }) => {
+  const navigate = useNavigate();
   const [isActive, setIsActive] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 mins
+  const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [motivationIndex, setMotivationIndex] = useState(0);
+  const [phase, setPhase] = useState('idle'); // idle, focus, break, summary
+  const [mode, setMode] = useState('standard'); // standard, custom, deepFocus
+  const [pauseCount, setPauseCount] = useState(0);
+  const [sessionStartTime, setSessionStartTime] = useState(null);
+  const [sessionData, setSessionData] = useState(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [ambientSound, setAmbientSound] = useState('none');
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [completedSessions, setCompletedSessions] = useState(0);
+
+  const MODES = {
+    standard: { focus: 25, break: 5, name: 'Standard' },
+    custom: { focus: 45, break: 10, name: 'Custom' },
+    deepFocus: { focus: 90, break: 15, name: 'Deep Focus' }
+  };
+
+  const AMBIENT_SOUNDS = [
+    { id: 'rain', name: 'Rain', emoji: '🌧️' },
+    { id: 'cafe', name: 'Café', emoji: '☕' },
+    { id: 'whitenoise', name: 'White Noise', emoji: '📻' },
+    { id: 'synth', name: 'Synth Wave', emoji: '🎵' },
+    { id: 'none', name: 'Silence', emoji: '🔇' }
+  ];
 
   const motivationalMessages = [
     "You're in the zone! Keep crushing it! 🔥",
@@ -63,37 +89,89 @@ const FocusTimer = ({ accentColor }) => {
   useEffect(() => {
     let interval = null;
     if (isActive && timeLeft > 0) {
-      interval = setInterval(() => setTimeLeft(t => t - 1), 1000);
-    } else if (timeLeft === 0) {
-      setIsActive(false);
-      setIsFullScreen(false);
-      confetti({ particleCount: 200, spread: 120, origin: { y: 0.6 } });
-      setTimeout(() => confetti({ particleCount: 150, spread: 100, origin: { y: 0.4 } }), 200);
+      interval = setInterval(() => {
+        setTimeLeft(t => {
+          if (t <= 1) {
+            handleSessionComplete();
+            return 0;
+          }
+          return t - 1;
+        });
+      }, 1000);
     }
     return () => clearInterval(interval);
   }, [isActive, timeLeft]);
 
-  // Rotate motivational messages every 2 minutes
   useEffect(() => {
     if (!isActive) return;
     const messageInterval = setInterval(() => {
       setMotivationIndex(prev => (prev + 1) % motivationalMessages.length);
-    }, 120000); // 2 minutes
+    }, 120000);
     return () => clearInterval(messageInterval);
   }, [isActive]);
+
+  const handleSessionComplete = () => {
+    setIsActive(false);
+    const duration = MODES[mode].focus;
+    const isPerfect = pauseCount === 0;
+    const basePoints = duration * 2;
+    const multiplier = completedSessions > 0 ? 1 + (completedSessions * 0.1) : 1;
+    const perfectBonus = isPerfect ? 50 : 0;
+    const pointsEarned = Math.round(basePoints * multiplier) + perfectBonus;
+
+    createSessionMutation.mutate({
+      durationMinutes: duration,
+      status: 'completed',
+      pointsEarned,
+      focusProfile: mode
+    });
+
+    updateProfileMutation.mutate({
+      totalPoints: (userProfile?.totalPoints || 0) + pointsEarned,
+      currentStreak: (userProfile?.currentStreak || 0) + 1
+    });
+
+    setSessionData({
+      duration,
+      pointsEarned,
+      pauseCount,
+      isPerfect,
+      streak: (userProfile?.currentStreak || 0) + 1
+    });
+
+    setCompletedSessions(prev => prev + 1);
+    confetti({ particleCount: 200, spread: 120, origin: { y: 0.6 } });
+    setTimeout(() => confetti({ particleCount: 150, spread: 100, origin: { y: 0.4 } }), 300);
+    setPhase('summary');
+  };
+
+  const startBreak = () => {
+    setPhase('break');
+    setTimeLeft(MODES[mode].break * 60);
+    setIsActive(true);
+    setPauseCount(0);
+  };
+
+  const skipBreak = () => {
+    setPhase('idle');
+    setTimeLeft(MODES[mode].focus * 60);
+    setSessionData(null);
+  };
 
   const toggleTimer = () => {
     if (!isActive) {
       setIsActive(true);
       setIsFullScreen(true);
+      setPhase('focus');
+      setSessionStartTime(Date.now());
     } else {
       setIsActive(false);
+      setPauseCount(prev => prev + 1);
     }
   };
 
   const exitFullScreen = () => {
     setIsFullScreen(false);
-    // Don't stop timer, just minimize
   };
 
   const formatTime = (seconds) => {
@@ -102,9 +180,8 @@ const FocusTimer = ({ accentColor }) => {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  const progress = ((25 * 60 - timeLeft) / (25 * 60)) * 100;
+  const progress = ((MODES[mode].focus * 60 - timeLeft) / (MODES[mode].focus * 60)) * 100;
   
-  // Dynamic color helper
   const getColor = () => {
     if (accentColor === 'coral') return 'rose';
     if (accentColor === 'electricBlue') return 'cyan';
@@ -224,14 +301,127 @@ const FocusTimer = ({ accentColor }) => {
     );
   }
 
+  // Show summary modal
+  if (phase === 'summary' && sessionData) {
+    return (
+      <div className="glass-card p-6 rounded-3xl relative overflow-hidden flex flex-col items-center justify-center text-center h-full min-h-[300px]">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20" />
+        <div className="relative z-10">
+          <h3 className="text-2xl font-bold text-white mb-2">Session Complete! 🎉</h3>
+          <div className="space-y-3 mb-6">
+            <p className="text-4xl font-black text-white">{sessionData.pointsEarned} XP</p>
+            <p className="text-white/60">{sessionData.duration} minutes focused</p>
+            {sessionData.isPerfect && <p className="text-yellow-400 font-bold">⭐ Perfect Session!</p>}
+          </div>
+          <div className="flex gap-3">
+            <Button onClick={startBreak} className={`bg-${c}-500 hover:bg-${c}-600`}>
+              Take Break
+            </Button>
+            <Button onClick={skipBreak} variant="outline" className="border-white/20">
+              Skip Break
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show break timer
+  if (phase === 'break') {
+    return (
+      <div className="glass-card p-6 rounded-3xl relative overflow-hidden flex flex-col items-center justify-center text-center h-full min-h-[300px]">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20" />
+        <div className="relative z-10">
+          <h3 className="text-xl font-bold text-white mb-2">Break Time 🌿</h3>
+          <div className="relative w-40 h-40 flex items-center justify-center my-6">
+            <svg className="absolute inset-0 w-full h-full transform -rotate-90">
+              <circle cx="80" cy="80" r="70" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-white/5" />
+              <circle 
+                cx="80" cy="80" r="70" 
+                stroke="currentColor" strokeWidth="8" 
+                fill="transparent" 
+                strokeDasharray={2 * Math.PI * 70}
+                strokeDashoffset={2 * Math.PI * 70 * (1 - ((MODES[mode].break * 60 - timeLeft) / (MODES[mode].break * 60)))}
+                className={`text-${c}-400 transition-all duration-1000 ease-linear`}
+                strokeLinecap="round"
+              />
+            </svg>
+            <div className="text-4xl font-black tabular-nums tracking-tighter">
+              {formatTime(timeLeft)}
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <Button onClick={() => setIsActive(!isActive)} variant="outline" className="border-white/20">
+              {isActive ? <Pause className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}
+              {isActive ? 'Pause' : 'Resume'}
+            </Button>
+            <Button onClick={skipBreak} variant="outline" className="border-white/20">
+              Skip Break
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Widget View
   return (
     <div className="glass-card p-6 rounded-3xl relative overflow-hidden flex flex-col items-center justify-center text-center h-full min-h-[300px]">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20" />
       
-      <div className="relative z-10 mb-6">
-        <h3 className="text-white/60 font-medium">Focus Shield</h3>
-        <p className="text-xs text-white/30 uppercase tracking-widest mt-1">Ready to block distractions?</p>
+      {showSettings && (
+        <div className="absolute inset-0 z-20 glass-card rounded-3xl p-4 overflow-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h4 className="font-bold text-white">Settings</h4>
+            <button onClick={() => setShowSettings(false)} className="text-white/60 hover:text-white">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="space-y-3">
+            <div>
+              <p className="text-white/60 text-xs mb-2">Mode</p>
+              <div className="grid grid-cols-3 gap-2">
+                {Object.entries(MODES).map(([key, config]) => (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      setMode(key);
+                      setTimeLeft(config.focus * 60);
+                      setPhase('idle');
+                    }}
+                    className={`p-2 rounded-lg text-xs ${mode === key ? `bg-${c}-500` : 'bg-white/5'}`}
+                  >
+                    {config.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-white/60 text-xs mb-2">Ambient Sound</p>
+              <div className="grid grid-cols-3 gap-2">
+                {AMBIENT_SOUNDS.map(sound => (
+                  <button
+                    key={sound.id}
+                    onClick={() => setAmbientSound(sound.id)}
+                    className={`p-2 rounded-lg text-xs ${ambientSound === sound.id ? `bg-${c}-500` : 'bg-white/5'}`}
+                  >
+                    {sound.emoji}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      <div className="relative z-10 mb-4 flex items-center justify-between w-full">
+        <div>
+          <h3 className="text-white/60 font-medium">Pomodoro Timer</h3>
+          <p className="text-xs text-white/30 uppercase tracking-widest mt-1">{MODES[mode].name} Mode</p>
+        </div>
+        <button onClick={() => setShowSettings(!showSettings)} className="text-white/60 hover:text-white">
+          <Settings className="w-5 h-5" />
+        </button>
       </div>
 
       <div className="relative w-40 h-40 flex items-center justify-center mb-6 cursor-pointer hover:scale-105 transition-transform" onClick={() => isActive && setIsFullScreen(true)}>
@@ -344,6 +534,12 @@ export default function Dashboard() {
     },
   });
 
+  const createSessionMutation = useMutation({
+    mutationFn: async (sessionData) => {
+      return await base44.entities.FocusSession.create(sessionData);
+    },
+  });
+
   // Handle Daily Dopamine Drop Logic
   useEffect(() => {
     if (!userProfile) return;
@@ -384,24 +580,6 @@ export default function Dashboard() {
 
       <div className="max-w-6xl mx-auto relative z-10 space-y-8">
         
-        {/* Enhanced Pomodoro CTA */}
-        <button
-          onClick={() => navigate(createPageUrl('PomodoroTimer'))}
-          className="w-full glass-card rounded-3xl p-6 hover:shadow-2xl hover:shadow-purple-500/30 transition-all group relative overflow-hidden mb-6"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-pink-600/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="relative flex items-center gap-6">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-purple-500/50">
-              <Zap className="w-10 h-10 text-white" />
-            </div>
-            <div className="text-left flex-1">
-              <h3 className="text-2xl font-bold text-white mb-1">Pomodoro Focus Timer</h3>
-              <p className="text-white/60">Enter deep work mode with gamified focus sessions</p>
-            </div>
-            <div className="text-purple-400 text-3xl group-hover:translate-x-2 transition-transform">→</div>
-          </div>
-        </button>
-
         {/* AI Study Assistant Button */}
         <button
           onClick={() => navigate(createPageUrl('StudyAssistant'))}
@@ -440,60 +618,89 @@ export default function Dashboard() {
         {/* Main Grid */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           
-          {/* Left Column: Stats & Goals */}
-          <div className="md:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
-             <StatCard 
-               title="Focus Points" 
-               value={userProfile?.totalPoints || 0} 
-               icon={Zap} 
-               color="yellow" 
-               trend="Keep grinding!"
-             />
-             <StatCard 
-               title="Quiz Mastery" 
-               value="0%" 
-               icon={Brain} 
-               color="purple" 
-               trend="Start a quiz!"
-             />
-             
-             {/* Weekly Goal Progress - Spans 2 cols */}
-             <div className="col-span-1 sm:col-span-2 glass-card p-6 rounded-3xl">
-               <div className="flex justify-between items-end mb-4">
-                 <div>
-                   <h3 className="text-lg font-bold">Weekly Goal</h3>
-                   <p className="text-sm text-white/40">{userProfile?.weeklyGoalHours || 10} hours targeted</p>
-                 </div>
-                 <div className="text-right">
-                   <span className="text-3xl font-bold text-white">0</span>
-                   <span className="text-white/40 text-sm"> / {userProfile?.weeklyGoalHours || 10}h</span>
-                 </div>
-               </div>
-               <div className="h-4 bg-white/5 rounded-full overflow-hidden">
-                 <motion.div 
-                   initial={{ width: 0 }}
-                   animate={{ width: '0%' }}
-                   transition={{ duration: 1.5, ease: "easeOut" }}
-                   className={`h-full bg-gradient-to-r from-${themeColor}-500 to-${themeColor}-300 rounded-full shadow-[0_0_20px_rgba(74,222,128,0.5)]`}
-                 />
-               </div>
-             </div>
-
-             {/* Recent Activity */}
-             <div className="col-span-1 sm:col-span-2 glass-card p-6 rounded-3xl">
-                <h3 className="text-lg font-bold mb-4">Today's Schedule</h3>
-                <div className="flex items-center justify-center h-32 text-white/40">
-                  <p>Build your schedule in the Schedule tab</p>
+          {/* Pomodoro CTA Banner */}
+          <div className="md:col-span-8">
+            <button
+              onClick={() => navigate(createPageUrl('PomodoroTimer'))}
+              className="w-full glass-card rounded-3xl p-6 hover:shadow-2xl hover:shadow-purple-500/30 transition-all group relative overflow-hidden h-full"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-pink-600/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative flex items-center gap-6">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-purple-500/50">
+                  <Zap className="w-10 h-10 text-white" />
                 </div>
-             </div>
+                <div className="text-left flex-1">
+                  <h3 className="text-2xl font-bold text-white mb-1">Pomodoro Focus Timer</h3>
+                  <p className="text-white/60">Enter deep work mode with gamified focus sessions</p>
+                </div>
+                <div className="text-purple-400 text-3xl group-hover:translate-x-2 transition-transform">→</div>
+              </div>
+            </button>
           </div>
 
-          {/* Right Column: Focus Timer */}
+          {/* Timer Widget */}
           <div className="md:col-span-4 h-full">
-            <FocusTimer accentColor={accentColor} />
+            <FocusTimer 
+              accentColor={accentColor} 
+              userProfile={userProfile}
+              updateProfileMutation={updateProfileMutation}
+              createSessionMutation={createSessionMutation}
+            />
+          </div>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          
+          <div className="md:col-span-6">
+            <StatCard 
+              title="Focus Points" 
+              value={userProfile?.totalPoints || 0} 
+              icon={Zap} 
+              color="yellow" 
+              trend="Keep grinding!"
+            />
+          </div>
+          <div className="md:col-span-6">
+            <StatCard 
+              title="Quiz Mastery" 
+              value="0%" 
+              icon={Brain} 
+              color="purple" 
+              trend="Start a quiz!"
+            />
           </div>
 
-        </div>
+          {/* Weekly Goal Progress - Full width */}
+          <div className="md:col-span-12 glass-card p-6 rounded-3xl">
+            <div className="flex justify-between items-end mb-4">
+              <div>
+                <h3 className="text-lg font-bold">Weekly Goal</h3>
+                <p className="text-sm text-white/40">{userProfile?.weeklyGoalHours || 10} hours targeted</p>
+              </div>
+              <div className="text-right">
+                <span className="text-3xl font-bold text-white">0</span>
+                <span className="text-white/40 text-sm"> / {userProfile?.weeklyGoalHours || 10}h</span>
+              </div>
+            </div>
+            <div className="h-4 bg-white/5 rounded-full overflow-hidden">
+              <motion.div 
+                initial={{ width: 0 }}
+                animate={{ width: '0%' }}
+                transition={{ duration: 1.5, ease: "easeOut" }}
+                className={`h-full bg-gradient-to-r from-${themeColor}-500 to-${themeColor}-300 rounded-full shadow-[0_0_20px_rgba(74,222,128,0.5)]`}
+              />
+            </div>
+          </div>
+
+          {/* Recent Activity - Full width */}
+          <div className="md:col-span-12 glass-card p-6 rounded-3xl">
+            <h3 className="text-lg font-bold mb-4">Today's Schedule</h3>
+            <div className="flex items-center justify-center h-32 text-white/40">
+              <p>Build your schedule in the Schedule tab</p>
+            </div>
+          </div>
+          </div>
 
       </div>
 
