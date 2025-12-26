@@ -44,3 +44,26 @@ class SoundManager {
 }
 
 export const soundManager = new SoundManager();
+
+// Ambient sound management
+let currentAmbient = null;
+let ambientAudio = null;
+
+export const playSound = (soundType) => {
+  soundManager.play(soundType);
+};
+
+export const playAmbient = (ambientType) => {
+  stopAmbient();
+  // Placeholder for ambient sound loop
+  console.log(`Playing ambient: ${ambientType}`);
+  currentAmbient = ambientType;
+};
+
+export const stopAmbient = () => {
+  if (currentAmbient && ambientAudio) {
+    ambientAudio.pause();
+    ambientAudio = null;
+    currentAmbient = null;
+  }
+};
