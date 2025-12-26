@@ -47,10 +47,10 @@ export const soundManager = new SoundManager();
 
 // Ambient sound URLs (loopable ambient tracks)
 const ambientSounds = {
-  rain: 'https://cdn.pixabay.com/audio/2022/05/13/audio_2f1c926891.mp3',
-  cafe: 'https://cdn.pixabay.com/audio/2022/03/10/audio_4e851f6d64.mp3',
-  whitenoise: 'https://cdn.pixabay.com/audio/2022/03/12/audio_db517ed5fc.mp3',
-  synth: 'https://cdn.pixabay.com/audio/2023/10/30/audio_c39434dd72.mp3',
+  rain: 'https://assets.mixkit.co/active_storage/sfx/2393/2393.wav',
+  cafe: 'https://assets.mixkit.co/active_storage/sfx/2523/2523.wav',
+  whitenoise: 'https://assets.mixkit.co/active_storage/sfx/2395/2395.wav',
+  synth: 'https://assets.mixkit.co/active_storage/sfx/2466/2466.wav',
 };
 
 // Ambient sound management
@@ -71,19 +71,11 @@ export const playAmbient = (ambientType) => {
   try {
     ambientAudio = new Audio(ambientSounds[ambientType]);
     ambientAudio.loop = true;
-    ambientAudio.volume = 0.3;
-    ambientAudio.crossOrigin = "anonymous";
+    ambientAudio.volume = 0.4;
     
-    // Load the audio
-    ambientAudio.load();
-    
-    ambientAudio.addEventListener('error', (e) => {
-      console.error('Audio load error:', e.target.error, ambientSounds[ambientType]);
-    });
-    
-    ambientAudio.addEventListener('loadeddata', () => {
-      console.log('Audio loaded, attempting play:', ambientType);
-      ambientAudio.play()
+    const playPromise = ambientAudio.play();
+    if (playPromise !== undefined) {
+      playPromise
         .then(() => {
           console.log('Ambient sound playing:', ambientType);
           currentAmbient = ambientType;
@@ -91,7 +83,7 @@ export const playAmbient = (ambientType) => {
         .catch(error => {
           console.error('Play failed:', error);
         });
-    });
+    }
   } catch (error) {
     console.error('Failed to create ambient sound:', error);
   }
