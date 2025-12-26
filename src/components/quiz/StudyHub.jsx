@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 import { Card } from '@/components/ui/card';
 import { Brain, Layers, FileText, ArrowLeft } from 'lucide-react';
 import QuizFeed from './QuizFeed';
@@ -12,6 +14,23 @@ export default function StudyHub() {
   const [selectedDeck, setSelectedDeck] = useState(null);
   const [selectedQuizDeck, setSelectedQuizDeck] = useState(null);
   const [selectedNoteDeck, setSelectedNoteDeck] = useState(null);
+
+  // Fetch user profile for accent color
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile'],
+    queryFn: async () => {
+      const profiles = await base44.entities.UserProfile.list();
+      return profiles[0] || { accentColor: 'neonGreen' };
+    },
+  });
+
+  const accentColor = userProfile?.accentColor || 'neonGreen';
+  const colorMap = {
+    neonGreen: { quiz: 'from-green-600 to-green-800 border-green-500 shadow-green-500/50', flashcard: 'from-emerald-600 to-emerald-800 border-emerald-500 shadow-emerald-500/50', note: 'from-teal-600 to-teal-800 border-teal-500 shadow-teal-500/50' },
+    coral: { quiz: 'from-rose-600 to-rose-800 border-rose-500 shadow-rose-500/50', flashcard: 'from-pink-600 to-pink-800 border-pink-500 shadow-pink-500/50', note: 'from-red-600 to-red-800 border-red-500 shadow-red-500/50' },
+    electricBlue: { quiz: 'from-blue-600 to-blue-800 border-blue-500 shadow-blue-500/50', flashcard: 'from-cyan-600 to-cyan-800 border-cyan-500 shadow-cyan-500/50', note: 'from-sky-600 to-sky-800 border-sky-500 shadow-sky-500/50' }
+  };
+  const colors = colorMap[accentColor];
 
   // Debug logging
   React.useEffect(() => {
@@ -95,7 +114,7 @@ export default function StudyHub() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <Card className="bg-gradient-to-br from-purple-600 to-purple-800 border-2 border-purple-500 p-8 text-center cursor-pointer hover:shadow-2xl hover:shadow-purple-500/50 transition-all">
+          <Card className={`bg-gradient-to-br ${colors.quiz} border-2 p-8 text-center cursor-pointer hover:shadow-2xl transition-all`}>
             <Brain className="w-16 h-16 text-white mx-auto mb-4" />
             <h3 className="text-2xl font-bold text-white mb-2">Quiz</h3>
             <p className="text-white/80 text-sm">Test your knowledge with interactive quizzes</p>
@@ -108,7 +127,7 @@ export default function StudyHub() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <Card className="bg-gradient-to-br from-blue-600 to-blue-800 border-2 border-blue-500 p-8 text-center cursor-pointer hover:shadow-2xl hover:shadow-blue-500/50 transition-all">
+          <Card className={`bg-gradient-to-br ${colors.flashcard} border-2 p-8 text-center cursor-pointer hover:shadow-2xl transition-all`}>
             <Layers className="w-16 h-16 text-white mx-auto mb-4" />
             <h3 className="text-2xl font-bold text-white mb-2">Flashcards</h3>
             <p className="text-white/80 text-sm">Review with swipeable flashcards</p>
@@ -121,7 +140,7 @@ export default function StudyHub() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <Card className="bg-gradient-to-br from-green-600 to-green-800 border-2 border-green-500 p-8 text-center cursor-pointer hover:shadow-2xl hover:shadow-green-500/50 transition-all">
+          <Card className={`bg-gradient-to-br ${colors.note} border-2 p-8 text-center cursor-pointer hover:shadow-2xl transition-all`}>
             <FileText className="w-16 h-16 text-white mx-auto mb-4" />
             <h3 className="text-2xl font-bold text-white mb-2">Notes</h3>
             <p className="text-white/80 text-sm">Read concise study notes</p>

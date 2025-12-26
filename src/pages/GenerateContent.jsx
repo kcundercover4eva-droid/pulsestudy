@@ -24,6 +24,23 @@ export default function GenerateContent() {
     },
   });
 
+  // Fetch user profile for accent color
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile'],
+    queryFn: async () => {
+      const profiles = await base44.entities.UserProfile.list();
+      return profiles[0] || { accentColor: 'neonGreen' };
+    },
+  });
+
+  const accentColor = userProfile?.accentColor || 'neonGreen';
+  const gradientMap = {
+    neonGreen: 'from-green-600 to-emerald-600',
+    coral: 'from-rose-600 to-pink-600',
+    electricBlue: 'from-cyan-600 to-blue-600'
+  };
+  const gradient = gradientMap[accentColor];
+
   const generateMutation = useMutation({
     mutationFn: async ({ title, subject, file }) => {
       // Upload file
@@ -366,7 +383,7 @@ export default function GenerateContent() {
             <Button
               type="submit"
               disabled={generateMutation.isPending || !title || !file}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              className={`w-full bg-gradient-to-r ${gradient} hover:opacity-90`}
             >
               {generateMutation.isPending ? (
                 <>
