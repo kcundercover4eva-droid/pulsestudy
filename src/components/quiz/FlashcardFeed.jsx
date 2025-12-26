@@ -33,36 +33,52 @@ const Card = ({ data, onSwipe, index }) => {
       exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
     >
       <motion.div
-        className="relative w-full h-full preserve-3d transition-all duration-500"
+        className="relative w-full h-full"
+        style={{ transformStyle: 'preserve-3d' }}
         animate={{ rotateY: isFlipped ? 180 : 0 }}
+        transition={{ duration: 0.6, ease: "easeInOut" }}
         onClick={() => setIsFlipped(!isFlipped)}
       >
         {/* Front - Concept/Question */}
-        <div className="absolute inset-0 backface-hidden glass-card rounded-3xl p-8 flex flex-col items-center justify-center text-center border border-white/10 shadow-2xl">
+        <div 
+          className="absolute inset-0 glass-card rounded-3xl p-8 flex flex-col items-center justify-center text-center border border-white/10 shadow-2xl"
+          style={{ 
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden'
+          }}
+        >
           <motion.div style={{ backgroundColor: bg }} className="absolute inset-0 rounded-3xl" />
-          <div className="text-xs uppercase tracking-widest text-cyan-400 mb-4 font-bold">Concept</div>
-          <h3 className="text-3xl font-bold leading-tight">{data.question}</h3>
-          <p className="text-white/30 text-sm mt-8 animate-pulse">Tap to see answer</p>
+          <div className="relative z-10">
+            <div className="text-xs uppercase tracking-widest text-cyan-400 mb-4 font-bold">Concept</div>
+            <h3 className="text-3xl font-bold leading-tight mb-4">{data.question}</h3>
+            <p className="text-white/30 text-sm mt-8 animate-pulse">👆 Tap to see definition</p>
+          </div>
         </div>
 
         {/* Back - Definition/Answer */}
         <div 
-          className="absolute inset-0 backface-hidden glass-card rounded-3xl p-8 flex flex-col items-center justify-center text-center border border-white/10 shadow-2xl bg-slate-900/90"
-          style={{ transform: "rotateY(180deg)" }}
+          className="absolute inset-0 glass-card rounded-3xl p-8 flex flex-col items-center justify-center text-center border border-white/10 shadow-2xl bg-gradient-to-br from-slate-900 to-slate-800"
+          style={{ 
+            backfaceVisibility: 'hidden',
+            WebkitBackfaceVisibility: 'hidden',
+            transform: 'rotateY(180deg)'
+          }}
         >
-          <div className="text-xs uppercase tracking-widest text-green-400 mb-4 font-bold">Definition</div>
-          <h3 className="text-2xl font-medium leading-relaxed text-white/90">{data.answer}</h3>
-          
-          <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-8 text-sm font-bold">
-            <div className="flex flex-col items-center text-red-400">
-              <X className="w-6 h-6 mb-1" />
-              <span>Need Review</span>
-              <span className="text-[10px] opacity-50">(Swipe Left)</span>
-            </div>
-            <div className="flex flex-col items-center text-green-400">
-              <Check className="w-6 h-6 mb-1" />
-              <span>I Know This</span>
-              <span className="text-[10px] opacity-50">(Swipe Right)</span>
+          <div className="relative z-10 w-full">
+            <div className="text-xs uppercase tracking-widest text-green-400 mb-4 font-bold">Definition</div>
+            <h3 className="text-2xl font-medium leading-relaxed text-white/90 mb-8">{data.answer}</h3>
+            
+            <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-8 text-sm font-bold">
+              <div className="flex flex-col items-center text-red-400">
+                <X className="w-6 h-6 mb-1" />
+                <span>Need Review</span>
+                <span className="text-[10px] opacity-50">(Swipe Left)</span>
+              </div>
+              <div className="flex flex-col items-center text-green-400">
+                <Check className="w-6 h-6 mb-1" />
+                <span>I Know This</span>
+                <span className="text-[10px] opacity-50">(Swipe Right)</span>
+              </div>
             </div>
           </div>
         </div>
