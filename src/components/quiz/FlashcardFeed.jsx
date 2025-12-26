@@ -13,6 +13,11 @@ const Card = ({ data, onSwipe, index }) => {
   const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0, 1, 1, 1, 0]);
   const bg = useTransform(x, [-200, 0, 200], ["rgba(239, 68, 68, 0.2)", "rgba(255, 255, 255, 0)", "rgba(34, 197, 94, 0.2)"]);
 
+  // Reset flip state when card changes
+  React.useEffect(() => {
+    setIsFlipped(false);
+  }, [data.id]);
+
   const handleDragEnd = (event, info) => {
     if (info.offset.x > 100) {
       onSwipe('right');
@@ -35,6 +40,7 @@ const Card = ({ data, onSwipe, index }) => {
       <motion.div
         className="relative w-full h-full"
         style={{ transformStyle: 'preserve-3d' }}
+        initial={{ rotateY: 0 }}
         animate={{ rotateY: isFlipped ? 180 : 0 }}
         transition={{ duration: 0.6, ease: "easeInOut" }}
         onClick={() => setIsFlipped(!isFlipped)}
