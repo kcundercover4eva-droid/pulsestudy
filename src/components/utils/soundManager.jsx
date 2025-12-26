@@ -48,7 +48,7 @@ export const soundManager = new SoundManager();
 // Ambient sound URLs (loopable ambient tracks)
 const ambientSounds = {
   rain: 'https://assets.mixkit.co/active_storage/sfx/2393/2393.wav',
-  cafe: 'https://cdn.pixabay.com/audio/2022/05/13/audio_c86f1c4dc1.mp3', // Soft jazz cafe ambience
+  cafe: 'https://assets.mixkit.co/active_storage/sfx/2487/2487.wav', // Soft jazz restaurant ambience
   whitenoise: 'https://assets.mixkit.co/active_storage/sfx/2395/2395.wav',
   synth: 'https://assets.mixkit.co/active_storage/sfx/2466/2466.wav',
 };
