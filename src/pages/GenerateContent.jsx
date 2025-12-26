@@ -15,12 +15,21 @@ export default function GenerateContent() {
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState('other');
   const [file, setFile] = useState(null);
+  const [selectedDeckId, setSelectedDeckId] = useState('');
 
   const { data: materials = [] } = useQuery({
     queryKey: ['studyMaterials'],
     queryFn: async () => {
       const user = await base44.auth.me();
       return base44.entities.StudyMaterial.filter({ created_by: user.email }, '-created_date');
+    },
+  });
+
+  const { data: decks = [] } = useQuery({
+    queryKey: ['decks'],
+    queryFn: async () => {
+      const user = await base44.auth.me();
+      return base44.entities.Deck.filter({ created_by: user.email }, '-created_date');
     },
   });
 
@@ -170,6 +179,7 @@ Begin now. Use ONLY the text provided.`,
             question: fc.front,
             answer: fc.back,
             subject,
+            deckId: selectedDeckId || undefined,
             masteryLevel: 0,
           });
         });
@@ -221,6 +231,18 @@ Begin now. Use ONLY the text provided.`,
       // Bulk create all content
       if (allFlashcards.length > 0) {
         await base44.entities.Flashcard.bulkCreate(allFlashcards);
+
+        // Update deck card count if a deck was selected
+        if (selectedDeckId) {
+          const deck = await base44.entities.Deck.list().then(decks => 
+            decks.find(d => d.id === selectedDeckId)
+          );
+          if (deck) {
+            await base44.entities.Deck.update(selectedDeckId, {
+              cardCount: (deck.cardCount || 0) + allFlashcards.length
+            });
+          }
+        }
       }
 
       if (allNotecards.length > 0) {
@@ -251,10 +273,12 @@ Begin now. Use ONLY the text provided.`,
     onSuccess: (data) => {
       queryClient.invalidateQueries(['studyMaterials']);
       queryClient.invalidateQueries(['flashcards']);
+      queryClient.invalidateQueries(['decks']);
       toast.success(`Generated ${data.counts.flashcards} flashcards, ${data.counts.notecards} notecards, and ${data.counts.quizzes} quizzes!`);
       setTitle('');
       setFile(null);
       setSubject('other');
+      setSelectedDeckId('');
     },
     onError: (error) => {
       toast.error('Failed to generate content: ' + error.message);
@@ -305,6 +329,23 @@ Begin now. Use ONLY the text provided.`,
                   <SelectItem value="english">English</SelectItem>
                   <SelectItem value="coding">Coding</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-white">Add to Deck (Optional)</Label>
+              <Select value={selectedDeckId} onValueChange={setSelectedDeckId} disabled={generateMutation.isPending}>
+                <SelectTrigger className="bg-slate-900 border-slate-700 text-white">
+                  <SelectValue placeholder="No deck (create later)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={null}>No deck</SelectItem>
+                  {decks.map(deck => (
+                    <SelectItem key={deck.id} value={deck.id}>
+                      {deck.name} ({deck.cardCount || 0} cards)
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
