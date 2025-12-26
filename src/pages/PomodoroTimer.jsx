@@ -133,13 +133,13 @@ export default function PomodoroTimer() {
 
   // Ambient sound management
   useEffect(() => {
-    if (phase === 'focus' && isActive && ambientSound !== 'none') {
+    if (phase === 'focus' && isActive && ambientSound !== 'none' && soundEnabled) {
       playAmbient(ambientSound);
     } else {
       stopAmbient();
     }
     return () => stopAmbient();
-  }, [phase, isActive, ambientSound]);
+  }, [phase, isActive, ambientSound, soundEnabled]);
 
   const handleStart = () => {
     setIsActive(true);
