@@ -67,6 +67,19 @@ css
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
 }
 
 @keyframes float {
