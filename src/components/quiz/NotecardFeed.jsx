@@ -4,15 +4,18 @@ import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
+import { ChevronLeft, ChevronRight, BookOpen, ArrowLeft } from 'lucide-react';
 
-export default function NotecardFeed() {
+export default function NotecardFeed({ selectedDeck = null, onBack = null }) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const { data: notecards = [], isLoading } = useQuery({
-    queryKey: ['notecards'],
+    queryKey: ['notecards', selectedDeck?.id],
     queryFn: async () => {
       const user = await base44.auth.me();
+      if (selectedDeck) {
+        return base44.entities.Notecard.filter({ sourceId: selectedDeck.id, created_by: user.email });
+      }
       return base44.entities.Notecard.filter({ created_by: user.email });
     },
   });
@@ -51,6 +54,20 @@ export default function NotecardFeed() {
 
   return (
     <div className="h-full flex flex-col items-center justify-center p-6">
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="self-start mb-4 flex items-center gap-2 text-white/60 hover:text-white transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span>Change Material</span>
+        </button>
+      )}
+      {selectedDeck && (
+        <div className="w-full max-w-2xl mb-4 text-center">
+          <h2 className="text-2xl font-bold text-white">{selectedDeck.title}</h2>
+        </div>
+      )}
       {/* Progress */}
       <div className="w-full max-w-2xl mb-4">
         <div className="flex justify-between text-white/60 text-sm mb-2">

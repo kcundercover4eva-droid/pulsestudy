@@ -5,10 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { CheckCircle2, XCircle, Trophy, RotateCcw } from 'lucide-react';
+import { CheckCircle2, XCircle, Trophy, RotateCcw, ArrowLeft } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
-export default function QuizFeed() {
+export default function QuizFeed({ selectedDeck = null, onBack = null }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [showResult, setShowResult] = useState(false);
@@ -17,9 +17,12 @@ export default function QuizFeed() {
   const [completed, setCompleted] = useState(false);
 
   const { data: quizzes = [], isLoading } = useQuery({
-    queryKey: ['quizzes'],
+    queryKey: ['quizzes', selectedDeck?.id],
     queryFn: async () => {
       const user = await base44.auth.me();
+      if (selectedDeck) {
+        return base44.entities.Quiz.filter({ sourceId: selectedDeck.id, created_by: user.email, isCompleted: false });
+      }
       return base44.entities.Quiz.filter({ created_by: user.email, isCompleted: false });
     },
   });
@@ -99,6 +102,20 @@ export default function QuizFeed() {
 
   return (
     <div className="h-full flex flex-col items-center justify-center p-6">
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="self-start mb-4 flex items-center gap-2 text-white/60 hover:text-white transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span>Change Material</span>
+        </button>
+      )}
+      {selectedDeck && (
+        <div className="w-full max-w-2xl mb-4 text-center">
+          <h2 className="text-2xl font-bold text-white">{selectedDeck.title}</h2>
+        </div>
+      )}
       {/* Progress */}
       <div className="w-full max-w-2xl mb-4">
         <div className="flex justify-between text-white/60 text-sm mb-2">
