@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Plus, GripHorizontal, Clock, RotateCcw, X } from 'lucide-react';
+import { haptics } from '../utils/haptics';
 import {
   Dialog,
   DialogContent,
@@ -138,7 +139,9 @@ export default function ScheduleBuilder() {
 
   // --- DRAG & RESIZE STATE ---
   // action: 'move' | 'resize-top' | 'resize-bottom'
-  const [dragState, setDragState] = useState(null); 
+  const [dragState, setDragState] = useState(null);
+  const [pressHoldTimer, setPressHoldTimer] = useState(null);
+  const [activeHandle, setActiveHandle] = useState(null); // 'top' | 'bottom' | null 
 
   // --- HELPERS ---
   const formatTime = (decimalTime) => {
@@ -190,16 +193,47 @@ export default function ScheduleBuilder() {
 
     e.preventDefault();
     e.stopPropagation(); // Prevent triggering grid creation
-    e.currentTarget.setPointerCapture(e.pointerId);
     
-    setDragState({
-      blockId: block.id,
-      action,
-      startY: e.clientY,
-      originalStart: block.start,
-      originalEnd: block.end,
-      day: block.day
-    });
+    // Press-and-hold for resize handles
+    if (action === 'resize-top' || action === 'resize-bottom') {
+      const timer = setTimeout(() => {
+        haptics.medium();
+        setActiveHandle(action === 'resize-top' ? 'top' : 'bottom');
+        e.currentTarget.setPointerCapture(e.pointerId);
+        
+        setDragState({
+          blockId: block.id,
+          action,
+          startY: e.clientY,
+          originalStart: block.start,
+          originalEnd: block.end,
+          day: block.day
+        });
+      }, 200); // 200ms press-and-hold
+      
+      setPressHoldTimer(timer);
+    } else {
+      // Immediate drag for move
+      e.currentTarget.setPointerCapture(e.pointerId);
+      haptics.light();
+      
+      setDragState({
+        blockId: block.id,
+        action,
+        startY: e.clientY,
+        originalStart: block.start,
+        originalEnd: block.end,
+        day: block.day
+      });
+    }
+  };
+
+  const handlePointerUp = () => {
+    if (pressHoldTimer) {
+      clearTimeout(pressHoldTimer);
+      setPressHoldTimer(null);
+    }
+    setActiveHandle(null);
   };
 
   useEffect(() => {
@@ -240,8 +274,15 @@ export default function ScheduleBuilder() {
       }
 
       // Snap to grid
+      const oldStart = newStart;
+      const oldEnd = newEnd;
       newStart = Math.round(newStart / SNAP_DECIMAL) * SNAP_DECIMAL;
       newEnd = Math.round(newEnd / SNAP_DECIMAL) * SNAP_DECIMAL;
+      
+      // Haptic feedback on snap
+      if (oldStart !== newStart || oldEnd !== newEnd) {
+        haptics.light();
+      }
 
       // Get the block being dragged
       const currentBlock = localBlocksRef.current.find(b => b.id === dragState.blockId);
@@ -306,6 +347,7 @@ export default function ScheduleBuilder() {
         });
         setIsDialogOpen(true);
         setDragState(null);
+        haptics.success();
         return;
       }
 
@@ -320,8 +362,10 @@ export default function ScheduleBuilder() {
             end: Number(updatedBlock.end)
         };
         updateBlockMutation.mutate(payload);
+        haptics.success();
       }
       setDragState(null);
+      setActiveHandle(null);
     };
 
     window.addEventListener('pointermove', handlePointerMove);
@@ -499,10 +543,19 @@ export default function ScheduleBuilder() {
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ 
                         opacity: 1, 
-                        scale: 1,
+                        scale: dragState?.blockId === block.id ? 1.02 : 1,
                         zIndex: dragState?.blockId === block.id ? 50 : 1
                       }}
-                      className={`absolute left-1 right-1 rounded-xl border-2 overflow-hidden select-none touch-none ${dragState?.blockId === block.id ? 'shadow-[0_0_20px_rgba(255,255,255,0.2)] ring-2 ring-white/50' : ''} ${isEraseMode ? 'cursor-pointer hover:ring-2 hover:ring-red-500 hover:opacity-80' : ''}`}
+                      transition={{
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 30
+                      }}
+                      className={`absolute left-1 right-1 rounded-xl border-2 overflow-hidden select-none touch-none transition-all ${
+                        dragState?.blockId === block.id 
+                          ? 'shadow-[0_0_30px_rgba(6,182,212,0.6)] ring-2 ring-cyan-400/70 brightness-110' 
+                          : 'shadow-md'
+                      } ${isEraseMode ? 'cursor-pointer hover:ring-2 hover:ring-red-500 hover:opacity-80' : ''}`}
                       style={{
                         top: `${block.start * PIXELS_PER_HOUR}px`,
                         height: `${(block.end - block.start) * PIXELS_PER_HOUR}px`,
@@ -512,10 +565,22 @@ export default function ScheduleBuilder() {
                     >
                       {/* Top Handle */}
                       <div 
-                        className="absolute top-0 left-0 right-0 h-6 cursor-ns-resize flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/20 z-20"
+                        className={`absolute top-0 left-0 right-0 h-8 cursor-ns-resize flex items-center justify-center transition-all z-20 ${
+                          activeHandle === 'top' && dragState?.blockId === block.id 
+                            ? 'opacity-100 bg-cyan-500/40' 
+                            : 'opacity-0 hover:opacity-100 bg-black/20'
+                        }`}
                         onPointerDown={(e) => handlePointerDown(e, block, 'resize-top')}
+                        onPointerUp={handlePointerUp}
+                        role="button"
+                        aria-label="Adjust start time"
+                        tabIndex={0}
                       >
-                         <div className="w-8 h-1 rounded-full bg-white/70" />
+                         <div className={`w-12 h-1.5 rounded-full transition-all ${
+                           activeHandle === 'top' && dragState?.blockId === block.id 
+                             ? 'bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]' 
+                             : 'bg-white/70'
+                         }`} />
                       </div>
 
                       {/* Content / Move Handle */}
@@ -554,21 +619,37 @@ export default function ScheduleBuilder() {
 
                       {/* Bottom Handle */}
                       <div 
-                        className="absolute bottom-0 left-0 right-0 h-6 cursor-ns-resize flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/20 z-20"
+                        className={`absolute bottom-0 left-0 right-0 h-8 cursor-ns-resize flex items-center justify-center transition-all z-20 ${
+                          activeHandle === 'bottom' && dragState?.blockId === block.id 
+                            ? 'opacity-100 bg-cyan-500/40' 
+                            : 'opacity-0 hover:opacity-100 bg-black/20'
+                        }`}
                         onPointerDown={(e) => handlePointerDown(e, block, 'resize-bottom')}
+                        onPointerUp={handlePointerUp}
+                        role="button"
+                        aria-label="Adjust end time"
+                        tabIndex={0}
                       >
-                        <div className="w-8 h-1 rounded-full bg-white/70" />
+                        <div className={`w-12 h-1.5 rounded-full transition-all ${
+                          activeHandle === 'bottom' && dragState?.blockId === block.id 
+                            ? 'bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)]' 
+                            : 'bg-white/70'
+                        }`} />
                       </div>
 
                       {/* Floating Tooltip during drag */}
                       {dragState?.blockId === block.id && (
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/90 text-white text-xs px-3 py-2 rounded-lg shadow-2xl whitespace-nowrap z-50 pointer-events-none border border-white/20">
-                          <Clock className="w-3 h-3 inline mr-1" />
-                          {formatTime(block.start)} - {formatTime(block.end)}
-                          <div className="text-[10px] text-white/70 text-center mt-0.5">
-                            {((block.end - block.start)).toFixed(2)}h
+                        <motion.div 
+                          initial={{ scale: 0.8, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/95 text-white text-sm px-4 py-3 rounded-xl shadow-2xl whitespace-nowrap z-50 pointer-events-none border-2 border-cyan-400/50 backdrop-blur-sm"
+                        >
+                          <Clock className="w-4 h-4 inline mr-1.5" />
+                          <span className="font-bold">{formatTime(block.start)} - {formatTime(block.end)}</span>
+                          <div className="text-xs text-cyan-400 text-center mt-1 font-mono">
+                            {((block.end - block.start)).toFixed(2)}h duration
                           </div>
-                        </div>
+                        </motion.div>
                       )}
 
                     </motion.div>
