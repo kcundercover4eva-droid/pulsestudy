@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import LandingScreen from '@/components/LandingScreen';
 import OnboardingWizard from '@/components/OnboardingWizard';
 import Dashboard from '@/components/dashboard/Dashboard';
-import QuizFeed from '@/components/quiz/QuizFeed';
+import StudyHub from '@/components/quiz/StudyHub';
 import ScheduleBuilder from '@/components/schedule/ScheduleBuilder';
 import GenerateContent from './GenerateContent';
 import { Calendar, Brain, LayoutDashboard, Home as HomeIcon, Upload } from 'lucide-react';
@@ -24,11 +24,7 @@ export default function Home() {
     <div className="min-h-screen bg-slate-950 text-white flex flex-col font-sans">
       <main className="flex-1 overflow-y-auto pb-24 no-scrollbar">
         {appTab === 'dashboard' && <Dashboard />}
-        {appTab === 'quiz' && (
-          <div className="p-4 h-full flex items-center justify-center">
-            <QuizFeed />
-          </div>
-        )}
+        {appTab === 'quiz' && <StudyHub />}
         {appTab === 'schedule' && (
           <div className="p-4 h-full">
             <ScheduleBuilder />
