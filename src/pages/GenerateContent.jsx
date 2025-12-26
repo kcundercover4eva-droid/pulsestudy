@@ -41,50 +41,79 @@ export default function GenerateContent() {
       const response = await base44.integrations.Core.InvokeLLM({
         prompt: `You are an AI study assistant. The user has uploaded study material. Your task is to extract ONLY the most important information and convert it into structured study tools.
 
-Your output must include:
-1. Flashcard sets (SEPARATED BY TOPIC)
-2. Notecards (SEPARATED BY TOPIC)
-3. Quizzes (SEPARATED BY TOPIC)
+      Your output must include:
+      Flashcard sets (SEPARATED BY TOPIC)
+      Notecards (SEPARATED BY TOPIC)
+      Quizzes (SEPARATED BY TOPIC)
 
-CRITICAL RULES
-• DO NOT combine flashcards and quizzes together.
-• DO NOT mix topics. Each topic must have its own flashcard set, notecard set, and quiz set.
-• DO NOT create one giant set. Automatically detect distinct topics and separate them.
-• Use ONLY the information from the uploaded text.
-• Do NOT invent facts.
-• Keep everything concise and easy to study.
+      CRITICAL RULES
+      • DO NOT combine flashcards and quizzes together.
+      • DO NOT mix topics. Each topic must have its own flashcard set, notecard set, and quiz set.
+      • DO NOT create one giant set. Automatically detect distinct topics and separate them.
+      • Use ONLY the information from the uploaded text.
+      • Do NOT invent facts.
+      • Keep everything concise and easy to study.
 
-TOPIC DETECTION
-Before generating any study materials:
-1. Identify the major topics or sections in the uploaded text.
-2. Treat each topic as its own independent study module.
-3. For each topic, generate:
-   - Flashcards
-   - Notecards
-   - Quizzes
+      TOPIC DETECTION
+      Before generating any study materials:
+      1. Identify the major topics or sections in the uploaded text.
+      2. Treat each topic as its own independent study module.
+      3. For each topic, generate:
+      - Flashcards
+      - Notecards
+      - Quizzes
 
-FLASHCARDS (PER TOPIC)
-Flashcards must:
-• Be short and direct.
-• Contain ONE concept per card.
-• Focus on definitions, key facts, formulas, and cause–effect.
-• Stay within the topic they belong to.
+      FLASHCARDS (PER TOPIC)
+      Flashcards must:
+      • Be short and direct.
+      • Contain ONE concept per card.
+      • Focus on definitions, key facts, formulas, and cause–effect.
+      • Stay within the topic they belong to.
 
-NOTECARDS (PER TOPIC)
-Notecards must:
-• Summarize broader concepts.
-• Use 2–4 clear sentences.
-• Explain ideas, processes, or relationships.
-• Avoid duplicating flashcards.
-• Stay within the topic they belong to.
+      Flashcard format:
+      { "front": "A short question or prompt", "back": "A short, direct answer" }
 
-QUIZZES (PER TOPIC)
-Generate three types of quiz questions for EACH topic:
-1. Multiple Choice (MCQ)
-2. True/False
-3. Short Answer
+      NOTECARDS (PER TOPIC)
+      Notecards must:
+      • Summarize broader concepts.
+      • Use 2–4 clear sentences.
+      • Explain ideas, processes, or relationships.
+      • Avoid duplicating flashcards.
+      • Stay within the topic they belong to.
 
-Begin now. Use ONLY the text provided.`,
+      Notecard format:
+      { "topic": "Topic name", "summary": "A concise 2–4 sentence explanation." }
+
+      QUIZZES (PER TOPIC)
+      Generate three types of quiz questions for EACH topic:
+      1. Multiple Choice (MCQ)
+      2. True/False
+      3. Short Answer
+
+      Quiz formats:
+      Multiple choice: { "question": "...", "options": ["A) ...", "B) ...", "C) ...", "D) ..."], "answer": "B" }
+      True/false: { "statement": "...", "answer": true }
+      Short answer: { "question": "...", "answer": "..." }
+
+      FINAL OUTPUT FORMAT (MANDATORY)
+      Return everything in ONE JSON object structured by topic:
+      {
+      "topics": [
+      {
+      "topic_name": "...",
+      "flashcards": [ {"front": "...", "back": "..."} ],
+      "notecards": [ {"topic": "...", "summary": "..."} ],
+      "quizzes": {
+      "multiple_choice": [...],
+      "true_false": [...],
+      "short_answer": [...]
+      }
+      },
+      ...
+      ]
+      }
+
+      Output structure must reflect this separation. Begin now. Use ONLY the text provided.`,
         file_urls: [file_url],
         response_json_schema: {
           type: 'object',
