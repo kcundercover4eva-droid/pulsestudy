@@ -71,11 +71,35 @@ export const playAmbient = (ambientType) => {
   try {
     ambientAudio = new Audio(ambientSounds[ambientType]);
     ambientAudio.loop = true;
-    ambientAudio.volume = 0.3;
-    ambientAudio.play().catch(() => {});
-    currentAmbient = ambientType;
+    ambientAudio.volume = 0.4;
+    
+    // Better error handling
+    ambientAudio.addEventListener('error', (e) => {
+      console.error('Audio load error:', e, ambientSounds[ambientType]);
+    });
+    
+    ambientAudio.addEventListener('canplaythrough', () => {
+      console.log('Audio loaded successfully:', ambientType);
+    });
+    
+    // Play with better error handling
+    const playPromise = ambientAudio.play();
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          console.log('Ambient sound playing:', ambientType);
+          currentAmbient = ambientType;
+        })
+        .catch(error => {
+          console.error('Play failed:', error.message);
+          // If autoplay is blocked, user needs to interact first
+          if (error.name === 'NotAllowedError') {
+            console.warn('Autoplay blocked. User interaction required.');
+          }
+        });
+    }
   } catch (error) {
-    console.error('Failed to play ambient sound:', error);
+    console.error('Failed to create ambient sound:', error);
   }
 };
 
