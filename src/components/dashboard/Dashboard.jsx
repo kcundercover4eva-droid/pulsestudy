@@ -385,6 +385,24 @@ export default function Dashboard() {
 
       <div className="max-w-6xl mx-auto relative z-10 space-y-8">
         
+        {/* Enhanced Pomodoro CTA */}
+        <button
+          onClick={() => navigate(createPageUrl('PomodoroTimer'))}
+          className="w-full glass-card rounded-3xl p-6 hover:shadow-2xl hover:shadow-purple-500/30 transition-all group relative overflow-hidden mb-6"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-pink-600/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="relative flex items-center gap-6">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-purple-500/50">
+              <Zap className="w-10 h-10 text-white" />
+            </div>
+            <div className="text-left flex-1">
+              <h3 className="text-2xl font-bold text-white mb-1">Pomodoro Focus Timer</h3>
+              <p className="text-white/60">Enter deep work mode with gamified focus sessions</p>
+            </div>
+            <div className="text-purple-400 text-3xl group-hover:translate-x-2 transition-transform">→</div>
+          </div>
+        </button>
+
         {/* AI Study Assistant Button */}
         <button
           onClick={() => navigate(createPageUrl('StudyAssistant'))}
