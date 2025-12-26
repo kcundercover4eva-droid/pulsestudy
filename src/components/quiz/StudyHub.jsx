@@ -10,23 +10,30 @@ import DeckManager from './DeckManager';
 export default function StudyHub() {
   const [selectedMode, setSelectedMode] = useState(null);
   const [selectedDeck, setSelectedDeck] = useState(null);
+  const [selectedQuizDeck, setSelectedQuizDeck] = useState(null);
+  const [selectedNoteDeck, setSelectedNoteDeck] = useState(null);
 
   // Debug logging
   React.useEffect(() => {
-    console.log('StudyHub state:', { selectedMode, selectedDeck });
-  }, [selectedMode, selectedDeck]);
+    console.log('StudyHub state:', { selectedMode, selectedDeck, selectedQuizDeck, selectedNoteDeck });
+  }, [selectedMode, selectedDeck, selectedQuizDeck, selectedNoteDeck]);
 
-  if (selectedMode === 'quiz') {
+  if (selectedMode === 'quiz' && !selectedQuizDeck) {
+    return (
+      <DeckManager
+        onSelectDeck={setSelectedQuizDeck}
+        onBack={() => setSelectedMode(null)}
+      />
+    );
+  }
+
+  if (selectedMode === 'quiz' && selectedQuizDeck) {
     return (
       <div className="h-full">
-        <button
-          onClick={() => setSelectedMode(null)}
-          className="absolute top-4 left-4 z-10 flex items-center gap-2 text-white/60 hover:text-white transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span>Back</span>
-        </button>
-        <QuizFeed />
+        <QuizFeed 
+          selectedDeck={selectedQuizDeck}
+          onBack={() => setSelectedQuizDeck(null)}
+        />
       </div>
     );
   }
@@ -51,17 +58,22 @@ export default function StudyHub() {
     );
   }
 
-  if (selectedMode === 'notes') {
+  if (selectedMode === 'notes' && !selectedNoteDeck) {
+    return (
+      <DeckManager
+        onSelectDeck={setSelectedNoteDeck}
+        onBack={() => setSelectedMode(null)}
+      />
+    );
+  }
+
+  if (selectedMode === 'notes' && selectedNoteDeck) {
     return (
       <div className="h-full">
-        <button
-          onClick={() => setSelectedMode(null)}
-          className="absolute top-4 left-4 z-10 flex items-center gap-2 text-white/60 hover:text-white transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span>Back</span>
-        </button>
-        <NotecardFeed />
+        <NotecardFeed 
+          selectedDeck={selectedNoteDeck}
+          onBack={() => setSelectedNoteDeck(null)}
+        />
       </div>
     );
   }
