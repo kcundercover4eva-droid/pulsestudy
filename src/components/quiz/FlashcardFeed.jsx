@@ -167,7 +167,7 @@ export default function FlashcardFeed({ selectedDeck = null, onBack = null }) {
       <div className="flex-1 relative w-full perspective-1000">
         <AnimatePresence>
           {activeCards.map((card, index) => (
-            index < 3 && (
+            index === 0 && (
               <Card 
                 key={card.id || index} 
                 data={card} 
