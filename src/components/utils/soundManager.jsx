@@ -45,6 +45,14 @@ class SoundManager {
 
 export const soundManager = new SoundManager();
 
+// Ambient sound URLs (loopable ambient tracks)
+const ambientSounds = {
+  rain: 'https://assets.mixkit.co/active_storage/sfx/2393/2393.wav',
+  cafe: 'https://assets.mixkit.co/active_storage/sfx/2458/2458.wav',
+  whitenoise: 'https://assets.mixkit.co/active_storage/sfx/2395/2395.wav',
+  synth: 'https://assets.mixkit.co/active_storage/sfx/2466/2466.wav',
+};
+
 // Ambient sound management
 let currentAmbient = null;
 let ambientAudio = null;
@@ -55,15 +63,27 @@ export const playSound = (soundType) => {
 
 export const playAmbient = (ambientType) => {
   stopAmbient();
-  // Placeholder for ambient sound loop
-  console.log(`Playing ambient: ${ambientType}`);
-  currentAmbient = ambientType;
+  
+  if (ambientType === 'none' || !ambientSounds[ambientType]) {
+    return;
+  }
+
+  try {
+    ambientAudio = new Audio(ambientSounds[ambientType]);
+    ambientAudio.loop = true;
+    ambientAudio.volume = 0.3;
+    ambientAudio.play().catch(() => {});
+    currentAmbient = ambientType;
+  } catch (error) {
+    console.error('Failed to play ambient sound:', error);
+  }
 };
 
 export const stopAmbient = () => {
-  if (currentAmbient && ambientAudio) {
+  if (ambientAudio) {
     ambientAudio.pause();
+    ambientAudio.currentTime = 0;
     ambientAudio = null;
-    currentAmbient = null;
   }
+  currentAmbient = null;
 };
