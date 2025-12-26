@@ -14,12 +14,16 @@ import {
   RotateCcw,
   Gift,
   Flame,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
+  MessageSquare,
+  Shield
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import confetti from 'canvas-confetti';
 import moment from 'moment';
+import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '../utils';
 
 // --- SUB-COMPONENTS ---
 
@@ -223,6 +227,7 @@ const DopamineDropModal = ({ isOpen, onClose }) => (
 // --- MAIN DASHBOARD ---
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [showDrop, setShowDrop] = useState(false);
   const queryClient = useQueryClient();
 
@@ -302,6 +307,23 @@ export default function Dashboard() {
       </div>
 
       <div className="max-w-6xl mx-auto relative z-10 space-y-8">
+        
+        {/* AI Study Assistant Button */}
+        <button
+          onClick={() => navigate(createPageUrl('StudyAssistant'))}
+          className="w-full glass-card rounded-2xl p-6 hover:shadow-2xl hover:shadow-purple-500/20 transition-all group"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <MessageSquare className="w-7 h-7 text-white" />
+            </div>
+            <div className="text-left flex-1">
+              <h3 className="text-xl font-bold text-white mb-1">Ask the Study Assistant</h3>
+              <p className="text-white/60 text-sm">Get step-by-step help on any topic</p>
+            </div>
+            <div className="text-purple-400 group-hover:translate-x-1 transition-transform">→</div>
+          </div>
+        </button>
         
         {/* Header */}
         <header className="flex justify-between items-center">
