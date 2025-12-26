@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Plus, GripHorizontal, Clock, RotateCcw, X } from 'lucide-react';
 import { haptics } from '../utils/haptics';
+import NotificationSettings from './NotificationSettings';
+import NotificationChecker from './NotificationChecker';
 import {
   Dialog,
   DialogContent,
@@ -381,6 +383,7 @@ export default function ScheduleBuilder() {
 
   return (
     <div className="h-full flex flex-col">
+      <NotificationChecker blocks={localBlocks} />
       {/* Header */}
       <div className="flex justify-between items-center mb-6 px-1">
         <div>
@@ -389,6 +392,7 @@ export default function ScheduleBuilder() {
         </div>
         
         <div className="flex gap-2 items-center">
+            <NotificationSettings />
             <label className="flex items-center gap-2 text-sm text-white/60 cursor-pointer">
               <input 
                 type="checkbox" 
