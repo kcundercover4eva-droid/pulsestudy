@@ -5,9 +5,11 @@ import { Brain, Layers, FileText, ArrowLeft } from 'lucide-react';
 import QuizFeed from './QuizFeed';
 import FlashcardFeed from './FlashcardFeed';
 import NotecardFeed from './NotecardFeed';
+import DeckManager from './DeckManager';
 
 export default function StudyHub() {
   const [selectedMode, setSelectedMode] = useState(null);
+  const [selectedDeck, setSelectedDeck] = useState(null);
 
   if (selectedMode === 'quiz') {
     return (
@@ -24,17 +26,22 @@ export default function StudyHub() {
     );
   }
 
-  if (selectedMode === 'flashcards') {
+  if (selectedMode === 'flashcards' && !selectedDeck) {
+    return (
+      <DeckManager
+        onSelectDeck={setSelectedDeck}
+        onBack={() => setSelectedMode(null)}
+      />
+    );
+  }
+
+  if (selectedMode === 'flashcards' && selectedDeck) {
     return (
       <div className="h-full">
-        <button
-          onClick={() => setSelectedMode(null)}
-          className="absolute top-4 left-4 z-10 flex items-center gap-2 text-white/60 hover:text-white transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span>Back</span>
-        </button>
-        <FlashcardFeed />
+        <FlashcardFeed 
+          selectedDeck={selectedDeck}
+          onBack={() => setSelectedDeck(null)}
+        />
       </div>
     );
   }

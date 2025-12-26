@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { Button } from "@/components/ui/button";
-import { Check, X, RotateCcw, Brain, Layers, Trophy } from 'lucide-react';
+import { Check, X, RotateCcw, Brain, Layers, Trophy, ArrowLeft } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -93,13 +93,18 @@ const Card = ({ data, onSwipe, index }) => {
   );
 };
 
-export default function FlashcardFeed() {
+export default function FlashcardFeed({ selectedDeck = null, onBack = null }) {
   const queryClient = useQueryClient();
   const [swipedCards, setSwipedCards] = useState(0);
 
   const { data: cards, isLoading } = useQuery({
-    queryKey: ['flashcards'],
-    queryFn: () => base44.entities.Flashcard.list(),
+    queryKey: ['flashcards', selectedDeck?.id],
+    queryFn: async () => {
+      if (selectedDeck) {
+        return await base44.entities.Flashcard.filter({ sourceId: selectedDeck.id });
+      }
+      return await base44.entities.Flashcard.list();
+    },
     initialData: []
   });
 
@@ -131,10 +136,19 @@ export default function FlashcardFeed() {
   return (
     <div className="h-[calc(100vh-100px)] w-full max-w-md mx-auto relative flex flex-col">
       <div className="flex justify-between items-center mb-6 px-4">
-        <div>
+        <div className="flex-1">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-2"
+            >
+              <Check className="w-4 h-4 rotate-180" />
+              <span className="text-sm">Change Deck</span>
+            </button>
+          )}
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <Brain className="w-6 h-6 text-purple-400" />
-            Study Mode
+            {selectedDeck ? selectedDeck.title : 'Study Mode'}
           </h2>
           <p className="text-white/40 text-sm">Swipe left to review later, right if you know it.</p>
         </div>
