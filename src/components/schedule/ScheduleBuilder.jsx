@@ -5,6 +5,7 @@ import { Plus, GripHorizontal, Clock, RotateCcw, X } from 'lucide-react';
 import { haptics } from '../utils/haptics';
 import NotificationSettings from './NotificationSettings';
 import NotificationChecker from './NotificationChecker';
+import TaskPanel from './TaskPanel';
 import {
   Dialog,
   DialogContent,
@@ -382,8 +383,11 @@ export default function ScheduleBuilder() {
   }, [dragState, updateBlockMutation]); // Removed localBlocks from dependency to prevent listener churn
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col lg:flex-row gap-6">
       <NotificationChecker blocks={localBlocks} />
+      
+      {/* Main Schedule Section */}
+      <div className="flex-1 flex flex-col min-w-0">
       {/* Header */}
       <div className="flex justify-between items-center mb-6 px-1">
         <div>
@@ -696,5 +700,11 @@ export default function ScheduleBuilder() {
         </DialogContent>
       </Dialog>
       </div>
-      );
-      }
+      
+      {/* Task Panel */}
+      <div className="w-full lg:w-80 flex-shrink-0">
+        <TaskPanel />
+      </div>
+    </div>
+  );
+}
