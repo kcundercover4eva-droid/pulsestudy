@@ -58,20 +58,26 @@ export default function StudyAssistant() {
     setIsLoading(true);
 
     try {
+      // Detect if student is really struggling and needs creative learning aids
+      const isStrugglingSignals = [
+        "don't understand", "still confused", "can't remember", "keep forgetting",
+        "too much", "too hard", "don't get it", "lost", "help me remember"
+      ];
+      const isStruggling = isStrugglingSignals.some(signal => 
+        messageText.toLowerCase().includes(signal)
+      );
+
+      // Check conversation history for repeated confusion
+      const recentMessages = messages.slice(-4);
+      const hasRepeatedConfusion = recentMessages.filter(m => 
+        m.role === 'user' && isStrugglingSignals.some(s => m.content.toLowerCase().includes(s))
+      ).length >= 2;
+
       // Build context from conversation history
       const conversationContext = messages
         .slice(-4)
         .map(m => `${m.role === 'user' ? 'Student' : 'Tutor'}: ${m.content}`)
         .join('\n\n');
-
-      // Detect if student is struggling
-      const recentMessages = messages.slice(-3);
-      const showsStruggle = 
-        messageText.toLowerCase().includes("don't know") ||
-        messageText.toLowerCase().includes("confused") ||
-        messageText.toLowerCase().includes("lost") ||
-        messageText.toLowerCase().includes("stuck") ||
-        (recentMessages.length >= 2 && recentMessages.filter(m => m.role === 'assistant').length >= 2);
 
       const prompt = `You are a hybrid Socratic + Step-by-Step AI tutor for high school students studying ${subject}. You combine the best of both worlds: asking guiding questions like Socrates, then providing clear explanations when needed.
 
@@ -104,6 +110,13 @@ Then provide:
 4. Show a worked example
 5. End with: "Does this make sense?" or "Want to try a similar one?"
 
+**STAGE 4: CREATIVE LEARNING AIDS** (Use when student is really struggling)
+• If after explanation they're STILL confused OR say things like "I can't remember this", "It's too much", "I keep forgetting"
+• Generate a creative memory aid by calling the learning_aids_generator agent
+• Introduce it: "Let me give you a memory trick that might help!" or "Here's a creative way to remember this:"
+• Present the mnemonic, analogy, or mind map from the agent
+• This makes learning engaging and memorable!
+
 🎨 FORMATTING:
 • **Bold** for key terms and concepts
 • Numbered lists for sequential steps
@@ -129,52 +142,55 @@ Respond as their coach and tutor:`;
         add_context_from_internet: false,
       });
 
+      let finalResponse = response;
+
+      // If student is really struggling, generate a creative learning aid
+      if (isStruggling || hasRepeatedConfusion) {
+        try {
+          // Extract the main topic/concept from the conversation
+          const topicExtractionPrompt = `Based on this conversation, identify the MAIN concept or topic the student is struggling with in 1-2 sentences:
+
+${conversationContext}
+
+Current question: ${messageText}
+
+Just state the topic/concept clearly.`;
+
+          const topicResponse = await base44.integrations.Core.InvokeLLM({
+            prompt: topicExtractionPrompt,
+            add_context_from_internet: false,
+          });
+
+          // Generate learning aid using the agent
+          const learningAidPrompt = `Create a creative memory aid for this concept:
+
+${topicResponse}
+
+Subject: ${subject}
+Student Context: ${conversationContext ? conversationContext.slice(-500) : 'Student is struggling to understand this concept'}
+
+Generate an engaging mnemonic, analogy, or memory technique to help them remember and understand this.`;
+
+          const learningAid = await base44.integrations.Core.InvokeLLM({
+            prompt: learningAidPrompt,
+            add_context_from_internet: false,
+          });
+
+          // Combine the tutor response with the creative learning aid
+          finalResponse = `${response}\n\n---\n\n💡 **Let me give you a memory trick that might help!**\n\n${learningAid}`;
+        } catch (error) {
+          console.error('Failed to generate learning aid:', error);
+          // Continue without learning aid if it fails
+        }
+      }
+
       const assistantMessage = {
         role: 'assistant',
-        content: response,
+        content: finalResponse,
         timestamp: new Date().toISOString(),
       };
 
       setMessages(prev => [...prev, assistantMessage]);
-
-      // If struggling, generate a creative learning aid
-      if (showsStruggle) {
-        const learningAidPrompt = `The student is struggling with this ${subject} concept. Based on the conversation, create ONE creative learning aid to help them remember and understand:
-
-${conversationContext}
-Student: ${messageText}
-
-Choose the MOST EFFECTIVE technique for this specific topic:
-- **Mnemonic**: Memorable phrase/acronym for lists/steps
-- **Analogy**: Real-world comparison they can relate to
-- **Mind Map**: Visual concept breakdown (use emojis as nodes)
-- **Memory Palace**: Story-based memory technique
-- **Pattern Recognition**: Identify the underlying pattern
-
-Requirements:
-- Be creative, engaging, and age-appropriate
-- Keep it SHORT (max 3-4 lines)
-- Make it memorable and fun
-- Ensure accuracy
-
-Format your response as:
-🎯 [Technique Name]
-[Your creative learning aid]`;
-
-        const learningAid = await base44.integrations.Core.InvokeLLM({
-          prompt: learningAidPrompt,
-          add_context_from_internet: false,
-        });
-
-        const learningAidMessage = {
-          role: 'assistant',
-          content: learningAid,
-          timestamp: new Date().toISOString(),
-          isLearningAid: true,
-        };
-
-        setMessages(prev => [...prev, learningAidMessage]);
-      }
     } catch (error) {
       toast.error('Failed to get response. Please try again.');
       console.error('AI error:', error);
@@ -272,8 +288,6 @@ Format your response as:
                 className={`max-w-[80%] rounded-2xl px-5 py-4 ${
                   message.role === 'user'
                     ? 'bg-purple-600 text-white'
-                    : message.isLearningAid
-                    ? 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-2 border-yellow-500/40'
                     : 'bg-white/10 text-white border border-white/10'
                 }`}
               >
@@ -282,7 +296,7 @@ Format your response as:
                     className="prose prose-invert prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
                     components={{
                       p: ({ children }) => <p className="mb-3 last:mb-0 leading-relaxed">{children}</p>,
-                      strong: ({ children }) => <strong className={message.isLearningAid ? "text-yellow-300 font-bold" : "text-purple-300 font-semibold"}>{children}</strong>,
+                      strong: ({ children }) => <strong className="text-purple-300 font-semibold">{children}</strong>,
                       code: ({ inline, children }) => 
                         inline ? (
                           <code className="px-2 py-0.5 rounded bg-purple-900/50 text-purple-200 text-sm font-mono">
