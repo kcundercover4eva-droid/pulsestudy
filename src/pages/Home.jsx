@@ -61,7 +61,7 @@ export default function Home() {
 
       {/* Bottom Navigation - Mobile Optimized */}
       <nav 
-        className="fixed bottom-0 left-0 right-0 z-[9999] bg-slate-900/95 backdrop-blur-xl border-t border-white/10 shadow-[0_-4px_24px_rgba(0,0,0,0.4)]"
+        className="fixed bottom-0 left-0 right-0 z-[9999] bg-slate-900 border-t-2 border-white/20 shadow-[0_-4px_24px_rgba(0,0,0,0.6)]"
         style={{ 
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
           touchAction: 'manipulation'
