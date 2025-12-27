@@ -9,9 +9,14 @@ import { CheckCircle2, XCircle, Trophy, RotateCcw, ArrowLeft, MessageSquare } fr
 import confetti from 'canvas-confetti';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import XPPopup from '../rewards/XPPopup';
+import { toast } from 'sonner';
+import React from 'react';
 
 export default function QuizFeed({ selectedDeck = null, onBack = null }) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [showResult, setShowResult] = useState(false);
@@ -19,8 +24,15 @@ export default function QuizFeed({ selectedDeck = null, onBack = null }) {
   const [score, setScore] = useState(0);
   const [completed, setCompleted] = useState(false);
   const [results, setResults] = useState([]);
+  const [showXPPopup, setShowXPPopup] = useState(false);
+  const [earnedXP, setEarnedXP] = useState(0);
+  const [isCritical, setIsCritical] = useState(false);
+  const [currentDifficulty, setCurrentDifficulty] = useState('medium');
+  const [correctStreak, setCorrectStreak] = useState(0);
+  const [incorrectStreak, setIncorrectStreak] = useState(0);
+  const [sessionXP, setSessionXP] = useState(0);
 
-  const { data: quizzes = [], isLoading } = useQuery({
+  const { data: allQuizzes = [], isLoading } = useQuery({
     queryKey: ['quizzes', selectedDeck?.id],
     queryFn: async () => {
       const user = await base44.auth.me();
@@ -30,6 +42,68 @@ export default function QuizFeed({ selectedDeck = null, onBack = null }) {
       return base44.entities.Quiz.filter({ created_by: user.email, isCompleted: false });
     },
   });
+
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile'],
+    queryFn: async () => {
+      const profiles = await base44.entities.UserProfile.list();
+      return profiles[0] || { totalPoints: 0 };
+    },
+  });
+
+  const { data: activeEvents = [] } = useQuery({
+    queryKey: ['randomEvents'],
+    queryFn: async () => {
+      const user = await base44.auth.me();
+      const events = await base44.entities.RandomEvent.filter({ 
+        created_by: user.email,
+        isActive: true
+      });
+      return events.filter(event => {
+        if (!event.expiresAt) return true;
+        return new Date(event.expiresAt) > new Date();
+      });
+    },
+  });
+
+  const updateProfileMutation = useMutation({
+    mutationFn: async (updates) => {
+      const profiles = await base44.entities.UserProfile.list();
+      if (profiles[0]) {
+        return await base44.entities.UserProfile.update(profiles[0].id, updates);
+      }
+      return await base44.entities.UserProfile.create(updates);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['userProfile']);
+    },
+  });
+
+  const createInteractionMutation = useMutation({
+    mutationFn: (data) => base44.entities.UserInteraction.create(data),
+  });
+
+  // Adaptive difficulty: filter and sort quizzes based on current difficulty
+  const quizzes = React.useMemo(() => {
+    if (!allQuizzes.length) return [];
+    
+    // Group by difficulty
+    const easy = allQuizzes.filter(q => q.difficulty === 'easy');
+    const medium = allQuizzes.filter(q => q.difficulty === 'medium');
+    const hard = allQuizzes.filter(q => q.difficulty === 'hard');
+    
+    // Build adaptive queue
+    let adaptiveQueue = [];
+    if (currentDifficulty === 'easy') {
+      adaptiveQueue = [...easy, ...medium];
+    } else if (currentDifficulty === 'hard') {
+      adaptiveQueue = [...hard, ...medium];
+    } else {
+      adaptiveQueue = [...medium, ...hard, ...easy];
+    }
+    
+    return adaptiveQueue.length > 0 ? adaptiveQueue : allQuizzes;
+  }, [allQuizzes, currentDifficulty]);
 
   if (isLoading) {
     return (
@@ -61,6 +135,9 @@ export default function QuizFeed({ selectedDeck = null, onBack = null }) {
             <p className="text-xl text-white/80 mb-2">
               You got {score} out of {quizzes.length} correct
             </p>
+            <div className="text-3xl font-bold text-yellow-400 mt-4">
+              +{sessionXP} XP Earned!
+            </div>
           </div>
 
           {/* Detailed Results */}
@@ -140,21 +217,86 @@ export default function QuizFeed({ selectedDeck = null, onBack = null }) {
     setShowResult(true);
     
     const isCorrect = answer === currentQuiz.answer;
+    const questionDifficulty = currentQuiz.difficulty || 'medium';
     
     // Track result
     setResults([...results, {
       question: currentQuiz.question,
       userAnswer: answer,
       correctAnswer: currentQuiz.answer,
-      isCorrect
+      isCorrect,
+      difficulty: questionDifficulty
     }]);
     
     if (isCorrect) {
       setScore(score + 1);
+      
+      // Calculate XP with critical hit chance
+      const baseXP = questionDifficulty === 'easy' ? 10 : questionDifficulty === 'hard' ? 30 : 20;
+      const criticalHit = Math.random() < 0.1; // 10% chance
+      const eventMultiplier = activeEvents.find(e => e.subject === currentQuiz.subject || e.subject === 'all')?.multiplier || 1;
+      const finalXP = Math.round(baseXP * (criticalHit ? 2 : 1) * eventMultiplier);
+      
+      setEarnedXP(finalXP);
+      setIsCritical(criticalHit);
+      setShowXPPopup(true);
+      setSessionXP(prev => prev + finalXP);
+      
+      // Update streaks for adaptive difficulty
+      const newCorrectStreak = correctStreak + 1;
+      setCorrectStreak(newCorrectStreak);
+      setIncorrectStreak(0);
+      
+      // Adaptive difficulty logic
+      if (questionDifficulty === 'medium' && newCorrectStreak >= 3) {
+        setCurrentDifficulty('hard');
+        toast.success('🔥 Difficulty increased! You\'re crushing it!');
+      } else if (questionDifficulty === 'easy' && newCorrectStreak >= 3) {
+        setCurrentDifficulty('medium');
+      }
+      
+      // Award XP to profile
+      updateProfileMutation.mutate({
+        totalPoints: (userProfile?.totalPoints || 0) + finalXP
+      });
+      
+      // Track interaction
+      createInteractionMutation.mutate({
+        contentId: currentQuiz.id,
+        interactionType: 'completed',
+        wasSuccessful: true,
+        difficulty: questionDifficulty,
+        accuracy: 1,
+        timeSpent: 0
+      });
+      
       confetti({
-        particleCount: 50,
-        spread: 60,
+        particleCount: criticalHit ? 150 : 50,
+        spread: criticalHit ? 100 : 60,
         origin: { y: 0.6 }
+      });
+    } else {
+      // Handle incorrect answer
+      const newIncorrectStreak = incorrectStreak + 1;
+      setIncorrectStreak(newIncorrectStreak);
+      setCorrectStreak(0);
+      
+      // Adaptive difficulty logic - make it easier
+      if (questionDifficulty === 'hard' && newIncorrectStreak >= 1) {
+        setCurrentDifficulty('medium');
+        toast.info('💡 Let\'s review some fundamentals first');
+      } else if (questionDifficulty === 'medium' && newIncorrectStreak >= 2) {
+        setCurrentDifficulty('easy');
+        toast.info('📚 Let\'s build up from the basics');
+      }
+      
+      createInteractionMutation.mutate({
+        contentId: currentQuiz.id,
+        interactionType: 'completed',
+        wasSuccessful: false,
+        difficulty: questionDifficulty,
+        accuracy: 0,
+        timeSpent: 0
       });
     }
   };
@@ -172,6 +314,13 @@ export default function QuizFeed({ selectedDeck = null, onBack = null }) {
 
   return (
     <div className="h-full flex flex-col items-center justify-center p-6">
+      <XPPopup 
+        show={showXPPopup} 
+        xp={earnedXP} 
+        isCritical={isCritical}
+        onComplete={() => setShowXPPopup(false)}
+      />
+      
       {onBack && (
         <button
           onClick={onBack}
@@ -190,7 +339,17 @@ export default function QuizFeed({ selectedDeck = null, onBack = null }) {
       <div className="w-full max-w-2xl mb-4">
         <div className="flex justify-between text-white/60 text-sm mb-2">
           <span>Question {currentIndex + 1} of {quizzes.length}</span>
-          <span>Score: {score}/{currentIndex}</span>
+          <div className="flex items-center gap-4">
+            <span>Score: {score}/{currentIndex}</span>
+            <span className="text-yellow-400 font-bold">Session XP: {sessionXP}</span>
+            {currentDifficulty !== 'medium' && (
+              <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                currentDifficulty === 'hard' ? 'bg-red-500/20 text-red-400' : 'bg-blue-500/20 text-blue-400'
+              }`}>
+                {currentDifficulty.toUpperCase()}
+              </span>
+            )}
+          </div>
         </div>
         <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
           <motion.div
