@@ -595,14 +595,22 @@ export default function Dashboard() {
   }, [mysteryBoxes, mysteryBoxToOpen]);
 
   const accentColor = userProfile?.accentColor || 'neonGreen';
-  
-  // Color mapping for dynamic classes
-  const colorMap = {
-    neonGreen: 'green',
-    coral: 'rose',
-    electricBlue: 'cyan'
-  };
-  const themeColor = colorMap[accentColor] || 'green';
+
+    // Color mapping for dynamic classes
+    const colorMap = {
+      neonGreen: 'green',
+      coral: 'rose',
+      electricBlue: 'cyan'
+    };
+    const themeColor = colorMap[accentColor] || 'green';
+
+    // Dynamic greeting based on time of day
+    const getGreeting = () => {
+      const hour = new Date().getHours();
+      if (hour < 12) return 'Good morning';
+      if (hour < 18) return 'Good afternoon';
+      return 'Good evening';
+    };
 
   return (
     <div className="bg-slate-950 text-white p-3 md:p-8 relative overflow-x-hidden">
@@ -628,7 +636,7 @@ export default function Dashboard() {
         
         {/* Title and Subheading */}
         <div className="mb-4 md:mb-6">
-          <h1 className="text-2xl md:text-4xl font-bold text-white mb-1 md:mb-2">Good afternoon, {currentUser?.full_name?.split(' ')[0] || 'Friend'}</h1>
+          <h1 className="text-2xl md:text-4xl font-bold text-white mb-1 md:mb-2">{getGreeting()}, {currentUser?.full_name?.split(' ')[0] || 'Friend'}</h1>
           <p className="text-white/60 text-sm md:text-base">Ready to crush your {userProfile?.weeklyGoalHours || 10}h goal this week?</p>
         </div>
 
