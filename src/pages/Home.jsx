@@ -46,7 +46,7 @@ export default function Home() {
       '--accent-primary': theme.primary,
       '--accent-secondary': theme.secondary
     }}>
-      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-32 md:pb-24">
+      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-40 md:pb-24">
         <div className="min-h-full">
           {appTab === 'dashboard' && <Dashboard />}
           {appTab === 'quiz' && <StudyHub />}
@@ -61,11 +61,12 @@ export default function Home() {
 
       {/* Bottom Navigation - Mobile Optimized */}
       <nav 
-        className="fixed bottom-0 left-0 right-0 z-[99999] bg-slate-900 border-t-2 border-white/20 shadow-[0_-4px_24px_rgba(0,0,0,0.6)]"
+        className="fixed left-0 right-0 z-[99999] bg-slate-900 border-t-2 border-white/20 shadow-[0_-4px_24px_rgba(0,0,0,0.6)]"
         style={{ 
-          paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 8px)',
-          touchAction: 'manipulation',
-          minHeight: '68px'
+          bottom: '0',
+          paddingTop: '12px',
+          paddingBottom: 'max(env(safe-area-inset-bottom, 16px), 16px)',
+          touchAction: 'manipulation'
         }}
       >
         <div className="w-full max-w-screen-lg mx-auto">
