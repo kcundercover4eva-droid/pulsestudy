@@ -220,8 +220,12 @@ export default function FlashcardFeed({ selectedDeck = null, onBack = null }) {
         <div className="flex-1">
           {onBack && (
             <button
-              onClick={onBack}
-              className="flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-2"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onBack();
+              }}
+              className="flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-2 touch-manipulation active:scale-95"
             >
               <ArrowLeft className="w-4 h-4" />
               <span className="text-sm">Change Deck</span>
