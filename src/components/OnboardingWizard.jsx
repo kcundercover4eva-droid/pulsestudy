@@ -209,7 +209,7 @@ export default function OnboardingWizard({ onComplete }) {
         </div>
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between mt-10">
+        <div className="flex justify-between mt-6">
           <Button 
             onClick={back} 
             variant="ghost" 
