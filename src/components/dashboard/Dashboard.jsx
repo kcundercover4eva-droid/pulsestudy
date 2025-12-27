@@ -468,44 +468,84 @@ const FocusTimer = ({ accentColor, userProfile, updateProfileMutation, createSes
   );
 };
 
-const DopamineDropModal = ({ isOpen, onClose }) => (
-  <AnimatePresence>
-    {isOpen && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <motion.div 
-          initial={{ opacity: 0 }} 
-          animate={{ opacity: 1 }} 
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-          onClick={onClose}
-        />
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.5, y: 50 }} 
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.5, y: 50 }}
-          className="relative w-full max-w-sm glass-card p-1 text-center rounded-[2rem] overflow-hidden"
-        >
-          <div className="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-8 rounded-[1.8rem]">
-            <div className="w-20 h-20 mx-auto bg-white/20 rounded-full flex items-center justify-center mb-4 animate-bounce">
-              <Gift className="w-10 h-10 text-white" />
+const LoginRewardModal = ({ isOpen, onClose, reward }) => {
+  if (!reward) return null;
+
+  const rewardConfig = {
+    xp_boost: {
+      gradient: 'from-yellow-500 via-orange-500 to-red-500',
+      icon: Zap,
+      title: 'Lucky Login!',
+      message: `${reward.amount}x XP Boost for ${reward.duration} minutes!`
+    },
+    focus_points: {
+      gradient: 'from-indigo-500 via-purple-500 to-pink-500',
+      icon: Zap,
+      title: 'Surprise Reward!',
+      message: `You earned ${reward.amount} Focus Points!`
+    },
+    streak_freeze: {
+      gradient: 'from-cyan-500 via-blue-500 to-indigo-500',
+      icon: Flame,
+      title: 'Nice Timing!',
+      message: `${reward.amount} Streak Freeze${reward.amount > 1 ? 's' : ''} added to your inventory!`
+    },
+    currency: {
+      gradient: 'from-green-500 via-emerald-500 to-teal-500',
+      icon: Gift,
+      title: 'Jackpot!',
+      message: `You got ${reward.amount} coins!`
+    },
+    pomodoro_boost: {
+      gradient: 'from-pink-500 via-rose-500 to-red-500',
+      icon: Trophy,
+      title: 'Power Up!',
+      message: `Next Pomodoro session gives ${reward.amount}x points!`
+    }
+  };
+
+  const config = rewardConfig[reward.type] || rewardConfig.focus_points;
+  const Icon = config.icon;
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={onClose}
+          />
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.5, y: 50 }} 
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.5, y: 50 }}
+            className="relative w-full max-w-sm glass-card p-1 text-center rounded-[2rem] overflow-hidden"
+          >
+            <div className={`bg-gradient-to-br ${config.gradient} p-8 rounded-[1.8rem]`}>
+              <div className="w-20 h-20 mx-auto bg-white/20 rounded-full flex items-center justify-center mb-4 animate-bounce">
+                <Icon className="w-10 h-10 text-white" />
+              </div>
+              <h2 className="text-2xl font-black text-white mb-2">{config.title}</h2>
+              <p className="text-white/80 mb-6">{config.message}</p>
+              <Button onClick={onClose} className="w-full bg-white text-purple-600 hover:bg-white/90 font-bold rounded-xl h-12">
+                Claim Reward! 🎉
+              </Button>
             </div>
-            <h2 className="text-2xl font-black text-white mb-2">Daily Drop!</h2>
-            <p className="text-white/80 mb-6">You unlocked a <span className="font-bold text-yellow-300">2x XP Boost</span> for the next hour!</p>
-            <Button onClick={onClose} className="w-full bg-white text-purple-600 hover:bg-white/90 font-bold rounded-xl h-12">
-              Claim Reward
-            </Button>
-          </div>
-        </motion.div>
-      </div>
-    )}
-  </AnimatePresence>
-);
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+};
 
 // --- MAIN DASHBOARD ---
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [showDrop, setShowDrop] = useState(false);
+  const [loginReward, setLoginReward] = useState(null);
   const [mysteryBoxToOpen, setMysteryBoxToOpen] = useState(null);
   const queryClient = useQueryClient();
 
@@ -603,24 +643,76 @@ export default function Dashboard() {
     },
   });
 
-  // Handle Daily Dopamine Drop Logic
+  // Handle Randomized Login Rewards
   useEffect(() => {
     if (!userProfile) return;
 
-    const today = moment().format('YYYY-MM-DD');
-    const lastDropDate = userProfile.lastDopamineDropDate 
-      ? moment(userProfile.lastDopamineDropDate).format('YYYY-MM-DD') 
+    const now = moment();
+    const lastRewardTime = userProfile.lastDopamineDropDate 
+      ? moment(userProfile.lastDopamineDropDate) 
       : null;
 
-    // Only show if we haven't shown it today
-    if (lastDropDate !== today) {
-      const timer = setTimeout(() => {
-        setShowDrop(true);
-        // Mark as shown for today
-        updateProfileMutation.mutate({ lastDopamineDropDate: today });
-      }, 1500);
-      return () => clearTimeout(timer);
+    // Check if 24 hours have passed since last reward
+    if (lastRewardTime && now.diff(lastRewardTime, 'hours') < 24) {
+      return; // Cooldown active
     }
+
+    // Calculate base probability (25%)
+    let rewardProbability = 0.25;
+
+    // Bonus for streak users (up to +10%)
+    if (userProfile.currentStreak >= 7) {
+      rewardProbability += 0.10;
+    } else if (userProfile.currentStreak >= 3) {
+      rewardProbability += 0.05;
+    }
+
+    // Bonus for returning users (up to +15%)
+    if (lastRewardTime) {
+      const daysSinceLastReward = now.diff(lastRewardTime, 'days');
+      if (daysSinceLastReward >= 7) {
+        rewardProbability += 0.15;
+      } else if (daysSinceLastReward >= 3) {
+        rewardProbability += 0.10;
+      }
+    }
+
+    // Random roll
+    const roll = Math.random();
+    if (roll > rewardProbability) {
+      return; // No reward this time
+    }
+
+    // Generate random reward
+    const rewardTypes = [
+      { type: 'xp_boost', amount: 2, duration: 60 },
+      { type: 'xp_boost', amount: 3, duration: 30 },
+      { type: 'focus_points', amount: 100 + Math.floor(Math.random() * 200) },
+      { type: 'focus_points', amount: 250 + Math.floor(Math.random() * 250) },
+      { type: 'streak_freeze', amount: 1 },
+      { type: 'currency', amount: 50 + Math.floor(Math.random() * 150) },
+      { type: 'pomodoro_boost', amount: 2 }
+    ];
+
+    const randomReward = rewardTypes[Math.floor(Math.random() * rewardTypes.length)];
+
+    // Award the reward
+    const timer = setTimeout(() => {
+      setLoginReward(randomReward);
+
+      // Apply reward
+      const updates = { lastDopamineDropDate: now.toISOString() };
+      if (randomReward.type === 'focus_points') {
+        updates.totalPoints = (userProfile.totalPoints || 0) + randomReward.amount;
+      } else if (randomReward.type === 'currency') {
+        updates.currency = (userProfile.currency || 0) + randomReward.amount;
+      }
+
+      updateProfileMutation.mutate(updates);
+      confetti({ particleCount: 150, spread: 120, origin: { y: 0.6 } });
+    }, 1500);
+
+    return () => clearTimeout(timer);
   }, [userProfile?.id]);
 
   // Auto-open mystery box if available
@@ -838,7 +930,11 @@ export default function Dashboard() {
 
       </div>
 
-      <DopamineDropModal isOpen={showDrop} onClose={() => setShowDrop(false)} />
+      <LoginRewardModal 
+        isOpen={!!loginReward} 
+        onClose={() => setLoginReward(null)} 
+        reward={loginReward}
+      />
     </div>
   );
 }
