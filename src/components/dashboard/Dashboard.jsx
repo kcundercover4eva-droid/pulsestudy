@@ -531,6 +531,28 @@ export default function Dashboard() {
     },
   });
 
+  // Calculate Quiz Mastery
+  const { data: quizMastery } = useQuery({
+    queryKey: ['quizMastery'],
+    queryFn: async () => {
+      const user = await base44.auth.me();
+      const interactions = await base44.entities.UserInteraction.filter({
+        created_by: user.email,
+        interactionType: 'completed'
+      });
+
+      if (interactions.length === 0) return 0;
+
+      // Calculate average accuracy
+      const totalAccuracy = interactions.reduce((sum, interaction) => {
+        return sum + (interaction.accuracy || 0);
+      }, 0);
+
+      return Math.round((totalAccuracy / interactions.length) * 100);
+    },
+    initialData: 0
+  });
+
   // Mutation to update drop date
   const updateProfileMutation = useMutation({
     mutationFn: async (updatedData) => {
@@ -726,10 +748,10 @@ export default function Dashboard() {
           <div className="md:col-span-6">
             <StatCard 
               title="Quiz Mastery" 
-              value="0%" 
+              value={`${quizMastery}%`} 
               icon={Brain} 
               color="purple" 
-              trend="Start a quiz!"
+              trend={quizMastery > 0 ? (quizMastery >= 80 ? "Excellent!" : quizMastery >= 60 ? "Good progress!" : "Keep practicing!") : "Start a quiz!"}
             />
           </div>
 
