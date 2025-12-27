@@ -36,9 +36,40 @@ export default function SprintMode() {
         const isTrueFalse = quiz.type === 'true_false';
         return hasOptions || isTrueFalse;
       });
-      // Randomly select 5-10 quizzes
-      const count = Math.min(10, validQuizzes.length);
-      return validQuizzes.sort(() => 0.5 - Math.random()).slice(0, count);
+      
+      // Group by sourceId to mix uploads
+      const bySource = {};
+      validQuizzes.forEach(quiz => {
+        const sourceId = quiz.sourceId || 'no_source';
+        if (!bySource[sourceId]) bySource[sourceId] = [];
+        bySource[sourceId].push(quiz);
+      });
+      
+      // Randomly pick from different sources
+      const selectedQuizzes = [];
+      const sourceIds = Object.keys(bySource);
+      const targetCount = Math.min(10, validQuizzes.length);
+      
+      while (selectedQuizzes.length < targetCount && validQuizzes.length > 0) {
+        // Pick random source
+        const randomSource = sourceIds[Math.floor(Math.random() * sourceIds.length)];
+        const sourceQuizzes = bySource[randomSource];
+        
+        if (sourceQuizzes.length > 0) {
+          // Pick random quiz from that source
+          const randomIndex = Math.floor(Math.random() * sourceQuizzes.length);
+          selectedQuizzes.push(sourceQuizzes[randomIndex]);
+          sourceQuizzes.splice(randomIndex, 1);
+        }
+        
+        // Remove empty sources
+        if (bySource[randomSource].length === 0) {
+          delete bySource[randomSource];
+          sourceIds.splice(sourceIds.indexOf(randomSource), 1);
+        }
+      }
+      
+      return selectedQuizzes;
     },
   });
 
