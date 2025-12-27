@@ -7,7 +7,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 // Card Component
-const Card = ({ data, onSwipe, index }) => {
+const Card = ({ data, onSwipe, index, markDifficult, markMastered }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-30, 30]);
@@ -277,7 +277,9 @@ export default function FlashcardFeed({ selectedDeck = null, onBack = null }) {
                 key={card.id || index} 
                 data={card} 
                 index={index} 
-                onSwipe={handleSwipe} 
+                onSwipe={handleSwipe}
+                markDifficult={markDifficult}
+                markMastered={markMastered}
               />
             )
           ))}
