@@ -142,7 +142,7 @@ export default function ScheduleBuilder() {
   };
 
   const handleDeleteBlock = async () => {
-    if (blockToDelete) {
+    if (blockToDelete && blockToDelete.type !== 'sleep') {
       await deleteBlockMutation.mutateAsync(blockToDelete.id);
       setBlockToDelete(null);
       setIsEraseMode(false);
@@ -208,6 +208,12 @@ export default function ScheduleBuilder() {
       // In erase mode, clicking the block triggers deletion
       e.preventDefault();
       e.stopPropagation();
+
+      // Prevent deleting sleep blocks
+      if (block.type === 'sleep') {
+        return;
+      }
+
       setBlockToDelete(block);
       return;
     }
@@ -587,7 +593,7 @@ export default function ScheduleBuilder() {
                         dragState?.blockId === block.id 
                           ? 'shadow-[0_0_30px_rgba(6,182,212,0.6)] ring-2 ring-cyan-400/70 brightness-110' 
                           : 'shadow-md'
-                      } ${isEraseMode ? 'cursor-pointer hover:ring-2 hover:ring-red-500 hover:opacity-80' : ''}`}
+                      } ${isEraseMode && block.type !== 'sleep' ? 'cursor-pointer hover:ring-2 hover:ring-red-500 hover:opacity-80' : isEraseMode ? 'cursor-not-allowed opacity-50' : ''}`}
                       style={{
                         top: `${block.start * PIXELS_PER_HOUR}px`,
                         height: `${(block.end - block.start) * PIXELS_PER_HOUR}px`,
