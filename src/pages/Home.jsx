@@ -46,12 +46,12 @@ export default function Home() {
       '--accent-primary': theme.primary,
       '--accent-secondary': theme.secondary
     }}>
-      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-24 pt-safe">
+      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-nav pt-safe">
         <div>
           {appTab === 'dashboard' && <Dashboard />}
           {appTab === 'quiz' && <StudyHub />}
           {appTab === 'schedule' && (
-            <div className="p-3 md:p-4 pb-8">
+            <div className="p-3 md:p-4 pb-4 min-h-mobile">
               <ScheduleBuilder />
             </div>
           )}
