@@ -66,18 +66,18 @@ export default function OnboardingWizard({ onComplete }) {
   const currentTheme = THEMES.find(t => t.id === data.accentColor);
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-slate-900 text-white p-4 relative overflow-hidden">
+    <div className="min-h-screen w-full flex items-center justify-center bg-slate-900 text-white p-6 relative overflow-hidden">
       
       {/* Background based on selection */}
       <div className={`absolute inset-0 bg-gradient-to-br ${currentTheme.gradient} opacity-20 blur-[100px] transition-all duration-700`} />
 
       <motion.div 
-        className="relative z-10 w-full max-w-lg glass rounded-3xl p-6 md:p-8 shadow-2xl border border-white/20"
+        className="relative z-10 w-full max-w-lg glass rounded-3xl p-8 md:p-10 pb-16 shadow-2xl border border-white/20"
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
       >
         {/* Progress */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-8">
           <div className="flex gap-1">
             {STEPS.map((_, i) => (
               <div 
@@ -89,7 +89,7 @@ export default function OnboardingWizard({ onComplete }) {
           <span className="text-xs font-medium text-white/50 uppercase tracking-widest">{STEPS[step].title}</span>
         </div>
 
-        <div className="min-h-[240px] flex flex-col justify-center">
+        <div className="min-h-[300px] flex flex-col justify-center">
           <AnimatePresence mode="wait">
             
             {/* Step 0: Color Selection */}
@@ -209,7 +209,7 @@ export default function OnboardingWizard({ onComplete }) {
         </div>
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between mt-6">
+        <div className="flex justify-between mt-10">
           <Button 
             onClick={back} 
             variant="ghost" 
