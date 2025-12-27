@@ -44,6 +44,7 @@ export default function ScheduleBuilder() {
   const [editingBlockId, setEditingBlockId] = useState(null);
   const [editingTitle, setEditingTitle] = useState('');
   const [blockToDelete, setBlockToDelete] = useState(null);
+  const [isMobileEditMode, setIsMobileEditMode] = useState(false);
 
   // Seeding Default Blocks - School 8am-3pm Mon-Fri, Sleep 10pm-6am all days
   useEffect(() => {
@@ -164,6 +165,11 @@ export default function ScheduleBuilder() {
 
   // Handle creating new blocks by dragging on empty grid
   const handleGridPointerDown = (e, dayIndex) => {
+    // On mobile, only allow interaction in edit mode
+    if (window.innerWidth < 768 && !isMobileEditMode) {
+      return;
+    }
+    
     if (!isCreationMode) return; // Only allow creation when in creation mode
     if (e.target !== e.currentTarget) return;
     
@@ -186,6 +192,11 @@ export default function ScheduleBuilder() {
   };
 
   const handlePointerDown = (e, block, action) => {
+    // On mobile, only allow interaction in edit mode
+    if (window.innerWidth < 768 && !isMobileEditMode) {
+      return;
+    }
+
     if (isEraseMode && action === 'move') {
       // In erase mode, clicking the block triggers deletion
       e.preventDefault();
@@ -395,7 +406,15 @@ export default function ScheduleBuilder() {
           <p className="text-white/40 text-sm">Drag to resize. Plan your perfect week.</p>
         </div>
         
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center flex-wrap">
+            {/* Mobile Edit Mode Toggle */}
+            <Button 
+              onClick={() => setIsMobileEditMode(!isMobileEditMode)}
+              className={`md:hidden font-bold rounded-xl ${isMobileEditMode ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-600 hover:bg-gray-700'} text-white`}
+            >
+              {isMobileEditMode ? '✓ Edit Mode' : 'Enable Edit'}
+            </Button>
+            
             <NotificationSettings />
             <label className="flex items-center gap-2 text-sm text-white/60 cursor-pointer">
               <input 
