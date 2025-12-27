@@ -592,7 +592,7 @@ export default function Dashboard() {
   const themeColor = colorMap[accentColor] || 'green';
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-3 md:p-8 relative overflow-x-hidden">
+    <div className="bg-slate-950 text-white p-3 md:p-8 relative overflow-x-hidden">
       <RandomEventBanner />
       
       {mysteryBoxToOpen && (

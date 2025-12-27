@@ -46,8 +46,8 @@ export default function Home() {
       '--accent-primary': theme.primary,
       '--accent-secondary': theme.secondary
     }}>
-      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-80 md:pb-24">
-        <div className="min-h-full">
+      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-20">
+        <div>
           {appTab === 'dashboard' && <Dashboard />}
           {appTab === 'quiz' && <StudyHub />}
           {appTab === 'schedule' && (
