@@ -794,18 +794,55 @@ export default function Dashboard() {
           <div className="md:col-span-12">
             <button
               onClick={() => navigate(createPageUrl('PomodoroTimer'))}
-              className="w-full glass-card rounded-2xl md:rounded-3xl p-6 md:p-8 hover:shadow-2xl hover:shadow-purple-500/30 transition-all group relative overflow-hidden h-full"
+              className="w-full glass-card rounded-2xl md:rounded-3xl p-6 md:p-8 hover:shadow-2xl transition-all group relative overflow-hidden h-full"
+              style={{ 
+                boxShadow: `0 0 60px -15px ${
+                  themeColor === 'green' ? '#4ade80' : 
+                  themeColor === 'rose' ? '#fb7185' : 
+                  '#06b6d4'
+                }33` 
+              }}
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-pink-600/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div 
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{
+                  background: themeColor === 'green' 
+                    ? 'linear-gradient(to right, rgba(74, 222, 128, 0.1), rgba(52, 211, 153, 0.1))'
+                    : themeColor === 'rose'
+                    ? 'linear-gradient(to right, rgba(251, 113, 133, 0.1), rgba(244, 63, 94, 0.1))'
+                    : 'linear-gradient(to right, rgba(6, 182, 212, 0.1), rgba(8, 145, 178, 0.1))'
+                }}
+              />
               <div className="relative flex items-center gap-6 md:gap-8">
-                <div className="w-20 h-20 md:w-28 md:h-28 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-purple-500/50 flex-shrink-0">
+                <div 
+                  className="w-20 h-20 md:w-28 md:h-28 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg flex-shrink-0"
+                  style={{
+                    background: themeColor === 'green'
+                      ? 'linear-gradient(to bottom right, #4ade80, #22c55e)'
+                      : themeColor === 'rose'
+                      ? 'linear-gradient(to bottom right, #fb7185, #f43f5e)'
+                      : 'linear-gradient(to bottom right, #06b6d4, #0891b2)',
+                    boxShadow: `0 0 30px ${
+                      themeColor === 'green' ? '#4ade80' : 
+                      themeColor === 'rose' ? '#fb7185' : 
+                      '#06b6d4'
+                    }50`
+                  }}
+                >
                   <Zap className="w-10 h-10 md:w-14 md:h-14 text-white" />
                 </div>
                 <div className="text-left flex-1 min-w-0">
                   <h3 className="text-2xl md:text-4xl font-bold text-white mb-1 md:mb-2">Pomodoro Focus Timer</h3>
                   <p className="text-white/60 text-sm md:text-lg">Enter deep work mode with gamified focus sessions</p>
                 </div>
-                <div className="text-purple-400 text-3xl md:text-4xl group-hover:translate-x-2 transition-transform flex-shrink-0">→</div>
+                <div 
+                  className="text-3xl md:text-4xl group-hover:translate-x-2 transition-transform flex-shrink-0"
+                  style={{
+                    color: themeColor === 'green' ? '#4ade80' : 
+                           themeColor === 'rose' ? '#fb7185' : 
+                           '#06b6d4'
+                  }}
+                >→</div>
               </div>
             </button>
           </div>
