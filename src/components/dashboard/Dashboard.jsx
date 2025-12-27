@@ -31,17 +31,17 @@ import NotificationSettings from '../schedule/NotificationSettings';
 // --- SUB-COMPONENTS ---
 
 const StatCard = ({ title, value, icon: Icon, color, trend }) => (
-  <div className="glass-card p-5 rounded-3xl relative overflow-hidden group hover:bg-white/5 transition-colors">
-    <div className={`absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-40 transition-opacity text-${color}-400`}>
-      <Icon className="w-16 h-16 transform rotate-12 translate-x-4 translate-y-[-10px]" />
+  <div className="glass-card p-3 md:p-5 rounded-2xl md:rounded-3xl relative overflow-hidden group hover:bg-white/5 transition-colors">
+    <div className={`absolute top-0 right-0 p-2 md:p-4 opacity-20 group-hover:opacity-40 transition-opacity text-${color}-400`}>
+      <Icon className="w-10 h-10 md:w-16 md:h-16 transform rotate-12 translate-x-2 md:translate-x-4 translate-y-[-5px] md:translate-y-[-10px]" />
     </div>
     <div className="relative z-10">
-      <div className={`w-10 h-10 rounded-xl bg-${color}-500/20 flex items-center justify-center mb-3 text-${color}-400`}>
-        <Icon className="w-5 h-5" />
+      <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-${color}-500/20 flex items-center justify-center mb-2 md:mb-3 text-${color}-400`}>
+        <Icon className="w-4 h-4 md:w-5 md:h-5" />
       </div>
-      <p className="text-white/40 text-sm font-medium uppercase tracking-wider">{title}</p>
-      <h3 className="text-3xl font-bold mt-1 tracking-tight text-white">{value}</h3>
-      {trend && <p className="text-green-400 text-xs mt-2 font-mono">{trend}</p>}
+      <p className="text-white/40 text-xs md:text-sm font-medium uppercase tracking-wider">{title}</p>
+      <h3 className="text-2xl md:text-3xl font-bold mt-0.5 md:mt-1 tracking-tight text-white">{value}</h3>
+      {trend && <p className="text-green-400 text-[10px] md:text-xs mt-1 md:mt-2 font-mono">{trend}</p>}
     </div>
   </div>
 );
@@ -367,21 +367,21 @@ const FocusTimer = ({ accentColor, userProfile, updateProfileMutation, createSes
 
   // Widget View
   return (
-    <div className="glass-card p-6 rounded-3xl relative overflow-hidden flex flex-col items-center justify-center text-center h-full min-h-[300px]">
+    <div className="glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl relative overflow-hidden flex flex-col items-center justify-center text-center h-full min-h-[220px] md:min-h-[300px]">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20" />
       
       {showSettings && (
-        <div className="absolute inset-0 z-20 glass-card rounded-3xl p-4 overflow-auto">
-          <div className="flex justify-between items-center mb-4">
-            <h4 className="font-bold text-white">Settings</h4>
+        <div className="absolute inset-0 z-20 glass-card rounded-2xl md:rounded-3xl p-3 md:p-4 overflow-auto">
+          <div className="flex justify-between items-center mb-3 md:mb-4">
+            <h4 className="font-bold text-white text-sm md:text-base">Settings</h4>
             <button onClick={() => setShowSettings(false)} className="text-white/60 hover:text-white">
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4 md:w-5 md:h-5" />
             </button>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2 md:space-y-3">
             <div>
-              <p className="text-white/60 text-xs mb-2">Mode</p>
-              <div className="grid grid-cols-3 gap-2">
+              <p className="text-white/60 text-[10px] md:text-xs mb-1.5 md:mb-2">Mode</p>
+              <div className="grid grid-cols-3 gap-1.5 md:gap-2">
                 {Object.entries(MODES).map(([key, config]) => (
                   <button
                     key={key}
@@ -390,7 +390,7 @@ const FocusTimer = ({ accentColor, userProfile, updateProfileMutation, createSes
                       setTimeLeft(config.focus * 60);
                       setPhase('idle');
                     }}
-                    className={`p-2 rounded-lg text-xs ${mode === key ? `bg-${c}-500` : 'bg-white/5'}`}
+                    className={`p-1.5 md:p-2 rounded-lg text-[10px] md:text-xs ${mode === key ? `bg-${c}-500` : 'bg-white/5'}`}
                   >
                     {config.name}
                   </button>
@@ -398,13 +398,13 @@ const FocusTimer = ({ accentColor, userProfile, updateProfileMutation, createSes
               </div>
             </div>
             <div>
-              <p className="text-white/60 text-xs mb-2">Ambient Sound</p>
-              <div className="grid grid-cols-3 gap-2">
+              <p className="text-white/60 text-[10px] md:text-xs mb-1.5 md:mb-2">Ambient Sound</p>
+              <div className="grid grid-cols-3 gap-1.5 md:gap-2">
                 {AMBIENT_SOUNDS.map(sound => (
                   <button
                     key={sound.id}
                     onClick={() => setAmbientSound(sound.id)}
-                    className={`p-2 rounded-lg text-xs ${ambientSound === sound.id ? `bg-${c}-500` : 'bg-white/5'}`}
+                    className={`p-1.5 md:p-2 rounded-lg text-xs md:text-sm ${ambientSound === sound.id ? `bg-${c}-500` : 'bg-white/5'}`}
                   >
                     {sound.emoji}
                   </button>
@@ -415,42 +415,36 @@ const FocusTimer = ({ accentColor, userProfile, updateProfileMutation, createSes
         </div>
       )}
       
-      <div className="relative z-10 mb-4 flex items-center justify-between w-full">
+      <div className="relative z-10 mb-3 md:mb-4 flex items-center justify-between w-full">
         <div>
-          <h3 className="text-white/60 font-medium">Pomodoro Timer</h3>
-          <p className="text-xs text-white/30 uppercase tracking-widest mt-1">{MODES[mode].name} Mode</p>
+          <h3 className="text-white/60 font-medium text-sm md:text-base">Pomodoro Timer</h3>
+          <p className="text-[10px] md:text-xs text-white/30 uppercase tracking-widest mt-0.5 md:mt-1">{MODES[mode].name} Mode</p>
         </div>
         <button onClick={() => setShowSettings(!showSettings)} className="text-white/60 hover:text-white">
-          <Settings className="w-5 h-5" />
+          <Settings className="w-4 h-4 md:w-5 md:h-5" />
         </button>
       </div>
 
-      <div className="relative w-40 h-40 flex items-center justify-center mb-6 cursor-pointer hover:scale-105 transition-transform" onClick={() => isActive && setIsFullScreen(true)}>
+      <div className="relative w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mb-4 md:mb-6 cursor-pointer hover:scale-105 transition-transform" onClick={() => isActive && setIsFullScreen(true)}>
         <svg className="absolute inset-0 w-full h-full transform -rotate-90">
-          <circle cx="80" cy="80" r="70" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-white/5" />
-          <circle 
-            cx="80" cy="80" r="70" 
-            stroke="currentColor" strokeWidth="8" 
-            fill="transparent" 
-            strokeDasharray={2 * Math.PI * 70}
-            strokeDashoffset={2 * Math.PI * 70 * (1 - progress / 100)}
-            className={`text-${c}-400 transition-all duration-1000 ease-linear`}
-            strokeLinecap="round"
-          />
+          <circle cx="64" cy="64" r="56" stroke="currentColor" strokeWidth="6" fill="transparent" className="text-white/5 md:hidden" />
+          <circle cx="64" cy="64" r="56" stroke="currentColor" strokeWidth="6" fill="transparent" strokeDasharray={2 * Math.PI * 56} strokeDashoffset={2 * Math.PI * 56 * (1 - progress / 100)} className={`text-${c}-400 transition-all duration-1000 ease-linear md:hidden`} strokeLinecap="round" />
+          <circle cx="80" cy="80" r="70" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-white/5 hidden md:block" />
+          <circle cx="80" cy="80" r="70" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray={2 * Math.PI * 70} strokeDashoffset={2 * Math.PI * 70 * (1 - progress / 100)} className={`text-${c}-400 transition-all duration-1000 ease-linear hidden md:block`} strokeLinecap="round" />
         </svg>
-        <div className="text-4xl font-black tabular-nums tracking-tighter">
+        <div className="text-3xl md:text-4xl font-black tabular-nums tracking-tighter">
           {formatTime(timeLeft)}
         </div>
-        {isActive && <div className="absolute bottom-10 text-[10px] text-white/40 font-bold uppercase">Tap to Expand</div>}
+        {isActive && <div className="absolute bottom-6 md:bottom-10 text-[9px] md:text-[10px] text-white/40 font-bold uppercase">Tap to Expand</div>}
       </div>
 
-      <div className="flex gap-4 relative z-10">
+      <div className="flex gap-3 md:gap-4 relative z-10">
         <Button 
           size="lg"
           onClick={toggleTimer}
-          className={`rounded-2xl h-12 px-8 font-bold shadow-lg shadow-${c}-500/20 bg-white text-black hover:bg-white/90`}
+          className={`rounded-xl md:rounded-2xl h-10 md:h-12 px-6 md:px-8 font-bold text-sm md:text-base shadow-lg shadow-${c}-500/20 bg-white text-black hover:bg-white/90`}
         >
-          {isActive ? <Pause className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}
+          {isActive ? <Pause className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 md:mr-2" /> : <Play className="w-3.5 h-3.5 md:w-4 md:h-4 mr-1.5 md:mr-2" />}
           {isActive ? 'Pause' : 'Start Focus'}
         </Button>
       </div>
@@ -572,52 +566,52 @@ export default function Dashboard() {
   const themeColor = colorMap[accentColor] || 'green';
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-4 md:p-8 relative overflow-x-hidden">
+    <div className="min-h-screen bg-slate-950 text-white p-3 md:p-8 relative overflow-x-hidden">
       {/* Background Gradients */}
       <div className="fixed inset-0 pointer-events-none">
         <div className={`absolute top-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-${themeColor}-600/10 blur-[120px]`} />
         <div className="absolute bottom-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-purple-600/10 blur-[120px]" />
       </div>
 
-      <div className="max-w-6xl mx-auto relative z-10 space-y-8">
+      <div className="max-w-6xl mx-auto relative z-10 space-y-4 md:space-y-8">
         
         {/* Header */}
         <header className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">Good afternoon, {currentUser?.full_name?.split(' ')[0] || 'Friend'}</h1>
-            <p className="text-white/40">Ready to crush your {userProfile?.weeklyGoalHours || 10}h goal this week?</p>
+            <h1 className="text-2xl md:text-3xl font-bold">Good afternoon, {currentUser?.full_name?.split(' ')[0] || 'Friend'}</h1>
+            <p className="text-white/40 text-sm md:text-base">Ready to crush your {userProfile?.weeklyGoalHours || 10}h goal this week?</p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             <NotificationSettings />
-            <div className="glass px-4 py-2 rounded-full flex items-center gap-2">
-              <Flame className="w-4 h-4 text-orange-400 fill-orange-400" />
-              <span className="font-bold">{userProfile?.currentStreak || 0} Day Streak</span>
+            <div className="glass px-2 md:px-4 py-1.5 md:py-2 rounded-full flex items-center gap-1.5 md:gap-2">
+              <Flame className="w-3.5 h-3.5 md:w-4 md:h-4 text-orange-400 fill-orange-400" />
+              <span className="font-bold text-xs md:text-sm">{userProfile?.currentStreak || 0}</span>
             </div>
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-white/20 to-white/5 border border-white/10 flex items-center justify-center text-sm font-bold">
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-white/20 to-white/5 border border-white/10 flex items-center justify-center text-xs md:text-sm font-bold">
               {currentUser?.full_name?.charAt(0) || 'U'}
             </div>
           </div>
         </header>
 
         {/* Main Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6">
           
           {/* Pomodoro CTA Banner */}
           <div className="md:col-span-8">
             <button
               onClick={() => navigate(createPageUrl('PomodoroTimer'))}
-              className="w-full glass-card rounded-3xl p-6 hover:shadow-2xl hover:shadow-purple-500/30 transition-all group relative overflow-hidden h-full"
+              className="w-full glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 hover:shadow-2xl hover:shadow-purple-500/30 transition-all group relative overflow-hidden h-full"
             >
               <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-pink-600/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative flex items-center gap-6">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-purple-500/50">
-                  <Zap className="w-10 h-10 text-white" />
+              <div className="relative flex items-center gap-4 md:gap-6">
+                <div className="w-14 h-14 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-purple-500/50 flex-shrink-0">
+                  <Zap className="w-7 h-7 md:w-10 md:h-10 text-white" />
                 </div>
-                <div className="text-left flex-1">
-                  <h3 className="text-2xl font-bold text-white mb-1">Pomodoro Focus Timer</h3>
-                  <p className="text-white/60">Enter deep work mode with gamified focus sessions</p>
+                <div className="text-left flex-1 min-w-0">
+                  <h3 className="text-lg md:text-2xl font-bold text-white mb-0.5 md:mb-1">Pomodoro Focus Timer</h3>
+                  <p className="text-white/60 text-xs md:text-base">Enter deep work mode with gamified focus sessions</p>
                 </div>
-                <div className="text-purple-400 text-3xl group-hover:translate-x-2 transition-transform">→</div>
+                <div className="text-purple-400 text-2xl md:text-3xl group-hover:translate-x-2 transition-transform flex-shrink-0">→</div>
               </div>
             </button>
           </div>
@@ -626,18 +620,18 @@ export default function Dashboard() {
           <div className="md:col-span-4 h-full">
             <button
               onClick={() => navigate(createPageUrl('StudyAssistant'))}
-              className="w-full glass-card rounded-3xl p-6 hover:shadow-2xl transition-all group h-full"
+              className="w-full glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 hover:shadow-2xl transition-all group h-full"
               style={{ boxShadow: `0 0 60px -15px ${themeColor === 'green' ? '#4ade80' : themeColor === 'rose' ? '#fb7185' : '#06b6d4'}33` }}
             >
-              <div className="flex flex-col items-center justify-center gap-4 h-full">
-                <div className={`w-20 h-20 rounded-full bg-gradient-to-br from-${themeColor}-600 to-${themeColor === 'green' ? 'emerald' : themeColor === 'rose' ? 'pink' : 'blue'}-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg`}>
-                  <MessageSquare className="w-10 h-10 text-white" />
+              <div className="flex flex-col items-center justify-center gap-3 md:gap-4 h-full">
+                <div className={`w-14 h-14 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-${themeColor}-600 to-${themeColor === 'green' ? 'emerald' : themeColor === 'rose' ? 'pink' : 'blue'}-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg`}>
+                  <MessageSquare className="w-7 h-7 md:w-10 md:h-10 text-white" />
                 </div>
                 <div className="text-center">
-                  <h3 className="text-2xl font-bold text-white mb-2">Ask the Study Assistant</h3>
-                  <p className="text-white/60 text-sm">Get step-by-step help on any topic</p>
+                  <h3 className="text-lg md:text-2xl font-bold text-white mb-1 md:mb-2">Ask the Study Assistant</h3>
+                  <p className="text-white/60 text-xs md:text-sm">Get step-by-step help on any topic</p>
                 </div>
-                <div className={`text-${themeColor}-400 text-2xl group-hover:translate-y-1 transition-transform`}>↓</div>
+                <div className={`text-${themeColor}-400 text-xl md:text-2xl group-hover:translate-y-1 transition-transform`}>↓</div>
               </div>
             </button>
           </div>
@@ -666,18 +660,18 @@ export default function Dashboard() {
           </div>
 
           {/* Weekly Goal Progress - Full width */}
-          <div className="md:col-span-12 glass-card p-6 rounded-3xl">
-            <div className="flex justify-between items-end mb-4">
+          <div className="md:col-span-12 glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl">
+            <div className="flex justify-between items-end mb-3 md:mb-4">
               <div>
-                <h3 className="text-lg font-bold">Weekly Goal</h3>
-                <p className="text-sm text-white/40">{userProfile?.weeklyGoalHours || 10} hours targeted</p>
+                <h3 className="text-base md:text-lg font-bold">Weekly Goal</h3>
+                <p className="text-xs md:text-sm text-white/40">{userProfile?.weeklyGoalHours || 10} hours targeted</p>
               </div>
               <div className="text-right">
-                <span className="text-3xl font-bold text-white">0</span>
-                <span className="text-white/40 text-sm"> / {userProfile?.weeklyGoalHours || 10}h</span>
+                <span className="text-2xl md:text-3xl font-bold text-white">0</span>
+                <span className="text-white/40 text-xs md:text-sm"> / {userProfile?.weeklyGoalHours || 10}h</span>
               </div>
             </div>
-            <div className="h-4 bg-white/5 rounded-full overflow-hidden">
+            <div className="h-3 md:h-4 bg-white/5 rounded-full overflow-hidden">
               <motion.div 
                 initial={{ width: 0 }}
                 animate={{ width: '0%' }}
@@ -688,9 +682,9 @@ export default function Dashboard() {
           </div>
 
           {/* Recent Activity - Full width */}
-          <div className="md:col-span-12 glass-card p-6 rounded-3xl">
-            <h3 className="text-lg font-bold mb-4">Today's Schedule</h3>
-            <div className="flex items-center justify-center h-32 text-white/40">
+          <div className="md:col-span-12 glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl">
+            <h3 className="text-base md:text-lg font-bold mb-3 md:mb-4">Today's Schedule</h3>
+            <div className="flex items-center justify-center h-20 md:h-32 text-white/40 text-sm md:text-base">
               <p>Build your schedule in the Schedule tab</p>
             </div>
           </div>
