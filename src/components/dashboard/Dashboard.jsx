@@ -587,6 +587,7 @@ export default function Dashboard() {
             <p className="text-white/40">Ready to crush your {userProfile?.weeklyGoalHours || 10}h goal this week?</p>
           </div>
           <div className="flex items-center gap-4">
+            <NotificationSettings />
             <div className="glass px-4 py-2 rounded-full flex items-center gap-2">
               <Flame className="w-4 h-4 text-orange-400 fill-orange-400" />
               <span className="font-bold">{userProfile?.currentStreak || 0} Day Streak</span>

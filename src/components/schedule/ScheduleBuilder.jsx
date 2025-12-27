@@ -390,23 +390,12 @@ export default function ScheduleBuilder() {
       {/* Main Schedule Section */}
       <div className="flex-1 flex flex-col min-w-0">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6 px-1">
-        <div>
-          <h2 className="text-2xl font-bold">Weekly Schedule</h2>
-          <p className="text-white/40 text-sm">Drag to resize. Plan your perfect week.</p>
-        </div>
+      <div className="mb-6 px-1">
+        <h2 className="text-2xl font-bold">Weekly Schedule</h2>
+        <p className="text-white/40 text-sm mb-4">Drag to resize. Plan your perfect week.</p>
         
-        <div className="flex gap-2 items-center">
-            <NotificationSettings />
-            <label className="flex items-center gap-2 text-sm text-white/60 cursor-pointer">
-              <input 
-                type="checkbox" 
-                checked={is12Hour} 
-                onChange={(e) => setIs12Hour(e.target.checked)}
-                className="rounded"
-              />
-              12-Hour
-            </label>
+        <div className="flex justify-between items-center">
+          <div className="flex gap-2 items-center">
             <Button 
                 variant="outline" 
                 onClick={() => {
@@ -426,7 +415,20 @@ export default function ScheduleBuilder() {
             >
               <Plus className="w-4 h-4 mr-2" /> {isCreationMode ? 'Cancel' : 'Add Block'}
             </Button>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          </div>
+          
+          <label className="flex items-center gap-1.5 text-xs text-white/60 cursor-pointer">
+            <input 
+              type="checkbox" 
+              checked={is12Hour} 
+              onChange={(e) => setIs12Hour(e.target.checked)}
+              className="rounded"
+            />
+            12-Hour
+          </label>
+        </div>
+        
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="glass bg-slate-900/90 text-white border-white/10">
             <DialogHeader>
               <DialogTitle>Name Your Block</DialogTitle>
