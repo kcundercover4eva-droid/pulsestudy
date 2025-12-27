@@ -417,28 +417,26 @@ export default function ScheduleBuilder() {
         <p className="text-white/40 text-sm mb-4">Drag to resize. Plan your perfect week.</p>
         
         <div className="flex justify-between items-center">
-          <div className="flex gap-2 items-center">
-            <Button 
-                variant="outline" 
-                onClick={() => {
-                  setIsEraseMode(!isEraseMode);
-                  setIsCreationMode(false);
-                }}
-                className={`border-white/10 hover:bg-white/5 ${isEraseMode ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-transparent text-white/60 hover:text-white'}`}
-            >
-                <X className="w-4 h-4 mr-2" /> {isEraseMode ? 'Cancel Erase' : 'Erase Mode'}
-            </Button>
-            <Button 
-              onClick={() => {
-                setIsCreationMode(!isCreationMode);
-                setIsEraseMode(false);
-              }}
-              className={`font-bold rounded-xl ${isCreationMode ? 'bg-orange-500 hover:bg-orange-600' : 'bg-cyan-500 hover:bg-cyan-600'} text-black shadow-[0_0_15px_rgba(6,182,212,0.5)]`}
-            >
-              <Plus className="w-4 h-4 mr-2" /> {isCreationMode ? 'Cancel' : 'Add Block'}
-            </Button>
-          </div>
-          
+          <button 
+            onClick={() => {
+              setIsEraseMode(!isEraseMode);
+              setIsCreationMode(false);
+            }}
+            className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${isEraseMode ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-transparent text-white/40 hover:text-white/60 border-white/10 hover:bg-white/5'}`}
+          >
+            <X className="w-3 h-3 inline mr-1" /> {isEraseMode ? 'Cancel' : 'Erase'}
+          </button>
+
+          <Button 
+            onClick={() => {
+              setIsCreationMode(!isCreationMode);
+              setIsEraseMode(false);
+            }}
+            className={`font-bold rounded-xl ${isCreationMode ? 'bg-orange-500 hover:bg-orange-600' : 'bg-cyan-500 hover:bg-cyan-600'} text-black shadow-[0_0_15px_rgba(6,182,212,0.5)]`}
+          >
+            <Plus className="w-4 h-4 mr-2" /> {isCreationMode ? 'Cancel' : 'Add Block'}
+          </Button>
+
           <label className="flex items-center gap-1.5 text-xs text-white/60 cursor-pointer">
             <input 
               type="checkbox" 
