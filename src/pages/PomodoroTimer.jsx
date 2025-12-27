@@ -354,8 +354,21 @@ export default function PomodoroTimer() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-white/60 hover:text-white transition-colors"
+            onClick={() => {
+              if (phase === 'focus' && isActive) {
+                if (window.confirm('Are you sure you want to leave? Your current focus session will be lost and you will not earn points.')) {
+                  stopAmbient();
+                  navigate(-1);
+                }
+              } else {
+                navigate(-1);
+              }
+            }}
+            className={`flex items-center gap-2 transition-colors ${
+              phase === 'focus' && isActive 
+                ? 'text-white/30 cursor-not-allowed' 
+                : 'text-white/60 hover:text-white'
+            }`}
           >
             <ArrowLeft className="w-5 h-5" />
             <span>Back</span>
