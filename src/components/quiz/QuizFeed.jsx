@@ -307,7 +307,26 @@ export default function QuizFeed({ selectedDeck = null, onBack = null }) {
       setShowResult(false);
       setShortAnswer('');
     } else {
+      // Check if we should increment streak (only once per day)
+      const today = new Date().toISOString().split('T')[0];
+      const lastStreakDate = userProfile?.lastStreakDate 
+        ? new Date(userProfile.lastStreakDate).toISOString().split('T')[0] 
+        : null;
+      
+      const shouldIncrementStreak = lastStreakDate !== today;
+      const newStreak = shouldIncrementStreak 
+        ? (userProfile?.currentStreak || 0) + 1 
+        : (userProfile?.currentStreak || 0);
+      
+      // Reward for completion
+      updateProfileMutation.mutate({
+        totalPoints: (userProfile?.totalPoints || 0) + 100,
+        currentStreak: newStreak,
+        lastStreakDate: shouldIncrementStreak ? today : userProfile?.lastStreakDate
+      });
+      
       setCompleted(true);
+      confetti({ particleCount: 150, spread: 100 });
     }
   };
 

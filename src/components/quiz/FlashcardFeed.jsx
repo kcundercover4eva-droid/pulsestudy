@@ -416,6 +416,27 @@ export default function FlashcardFeed({ selectedDeck = null, onBack = null }) {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             className="absolute inset-0 flex flex-col items-center justify-center text-center glass rounded-3xl p-8"
+            onAnimationComplete={() => {
+              // Check if we should increment streak (only once per day)
+              const today = new Date().toISOString().split('T')[0];
+              const lastStreakDate = userProfile?.lastStreakDate 
+                ? new Date(userProfile.lastStreakDate).toISOString().split('T')[0] 
+                : null;
+              
+              const shouldIncrementStreak = lastStreakDate !== today;
+              const newStreak = shouldIncrementStreak 
+                ? (userProfile?.currentStreak || 0) + 1 
+                : (userProfile?.currentStreak || 0);
+              
+              // Reward streak for completing all cards
+              if (shouldIncrementStreak) {
+                updateProfileMutation.mutate({
+                  currentStreak: newStreak,
+                  lastStreakDate: today
+                });
+                confetti({ particleCount: 150, spread: 100 });
+              }
+            }}
           >
             <Trophy className="w-20 h-20 text-yellow-400 mb-4" />
             <h3 className="text-3xl font-bold mb-2">Session Complete!</h3>

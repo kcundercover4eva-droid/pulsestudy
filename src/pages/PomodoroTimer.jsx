@@ -187,10 +187,22 @@ export default function PomodoroTimer() {
       focusProfile: mode
     });
 
+    // Check if we should increment streak (only once per day)
+    const today = new Date().toISOString().split('T')[0];
+    const lastStreakDate = userProfile?.lastStreakDate 
+      ? new Date(userProfile.lastStreakDate).toISOString().split('T')[0] 
+      : null;
+    
+    const shouldIncrementStreak = lastStreakDate !== today;
+    const newStreak = shouldIncrementStreak 
+      ? (userProfile?.currentStreak || 0) + 1 
+      : (userProfile?.currentStreak || 0);
+
     // Update profile
     updateProfileMutation.mutate({
       totalPoints: (userProfile?.totalPoints || 0) + pointsEarned,
-      currentStreak: (userProfile?.currentStreak || 0) + 1
+      currentStreak: newStreak,
+      lastStreakDate: shouldIncrementStreak ? today : userProfile?.lastStreakDate
     });
 
     setSessionData({
@@ -199,7 +211,8 @@ export default function PomodoroTimer() {
       pauseCount,
       distractionAttempts,
       isPerfect,
-      streak: (userProfile?.currentStreak || 0) + 1
+      streak: newStreak,
+      streakIncremented: shouldIncrementStreak
     });
 
     setCompletedSessions(prev => prev + 1);
