@@ -216,16 +216,23 @@ export default function FlashcardFeed({ selectedDeck = null, onBack = null }) {
 
   return (
     <div className="h-[calc(100vh-100px)] w-full max-w-md mx-auto relative flex flex-col">
-      <div className="flex justify-between items-center mb-4 px-4">
+      <div className="flex justify-between items-center mb-4 px-4 relative z-50">
         <div className="flex-1">
           {onBack && (
             <button
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Back button touched');
+                onBack();
+              }}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                console.log('Back button clicked');
                 onBack();
               }}
-              className="flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-2 touch-manipulation active:scale-95"
+              className="flex items-center gap-2 text-white/60 hover:text-white transition-colors mb-2 touch-manipulation active:scale-95 pointer-events-auto py-2 -ml-2 pl-2"
             >
               <ArrowLeft className="w-4 h-4" />
               <span className="text-sm">Change Deck</span>
