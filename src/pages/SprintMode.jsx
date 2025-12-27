@@ -68,6 +68,15 @@ export default function SprintMode() {
     }
   }, [phase, timeLeft]);
 
+  useEffect(() => {
+    if (showXPPopup) {
+      const timer = setTimeout(() => {
+        setShowXPPopup(false);
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [showXPPopup]);
+
   const startSprint = (duration) => {
     setTimeLeft(duration);
     setPhase('active');
