@@ -580,24 +580,6 @@ export default function Dashboard() {
 
       <div className="max-w-6xl mx-auto relative z-10 space-y-8">
         
-        {/* AI Study Assistant Button */}
-        <button
-          onClick={() => navigate(createPageUrl('StudyAssistant'))}
-          className="w-full glass-card rounded-2xl p-6 hover:shadow-2xl transition-all group"
-          style={{ boxShadow: `0 0 60px -15px ${themeColor === 'green' ? '#4ade80' : themeColor === 'rose' ? '#fb7185' : '#06b6d4'}33` }}
-        >
-          <div className="flex items-center gap-4">
-            <div className={`w-14 h-14 rounded-full bg-gradient-to-br from-${themeColor}-600 to-${themeColor === 'green' ? 'emerald' : themeColor === 'rose' ? 'pink' : 'blue'}-600 flex items-center justify-center group-hover:scale-110 transition-transform`}>
-              <MessageSquare className="w-7 h-7 text-white" />
-            </div>
-            <div className="text-left flex-1">
-              <h3 className="text-xl font-bold text-white mb-1">Ask the Study Assistant</h3>
-              <p className="text-white/60 text-sm">Get step-by-step help on any topic</p>
-            </div>
-            <div className={`text-${themeColor}-400 group-hover:translate-x-1 transition-transform`}>→</div>
-          </div>
-        </button>
-        
         {/* Header */}
         <header className="flex justify-between items-center">
           <div>
@@ -638,14 +620,24 @@ export default function Dashboard() {
             </button>
           </div>
 
-          {/* Timer Widget */}
+          {/* AI Study Assistant */}
           <div className="md:col-span-4 h-full">
-            <FocusTimer 
-              accentColor={accentColor} 
-              userProfile={userProfile}
-              updateProfileMutation={updateProfileMutation}
-              createSessionMutation={createSessionMutation}
-            />
+            <button
+              onClick={() => navigate(createPageUrl('StudyAssistant'))}
+              className="w-full glass-card rounded-3xl p-6 hover:shadow-2xl transition-all group h-full"
+              style={{ boxShadow: `0 0 60px -15px ${themeColor === 'green' ? '#4ade80' : themeColor === 'rose' ? '#fb7185' : '#06b6d4'}33` }}
+            >
+              <div className="flex flex-col items-center justify-center gap-4 h-full">
+                <div className={`w-20 h-20 rounded-full bg-gradient-to-br from-${themeColor}-600 to-${themeColor === 'green' ? 'emerald' : themeColor === 'rose' ? 'pink' : 'blue'}-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg`}>
+                  <MessageSquare className="w-10 h-10 text-white" />
+                </div>
+                <div className="text-center">
+                  <h3 className="text-2xl font-bold text-white mb-2">Ask the Study Assistant</h3>
+                  <p className="text-white/60 text-sm">Get step-by-step help on any topic</p>
+                </div>
+                <div className={`text-${themeColor}-400 text-2xl group-hover:translate-y-1 transition-transform`}>↓</div>
+              </div>
+            </button>
           </div>
         </div>
 
