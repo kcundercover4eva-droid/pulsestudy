@@ -412,7 +412,7 @@ export default function ScheduleBuilder() {
       {/* Main Schedule Section */}
       <div className="flex-1 flex flex-col min-w-0">
       {/* Header */}
-      <div className="mb-6 px-1 pt-8">
+      <div className="mb-6 px-1">
         <h2 className="text-2xl font-bold">Weekly Schedule</h2>
         <p className="text-white/40 text-sm mb-4">Drag to resize. Plan your perfect week.</p>
         
