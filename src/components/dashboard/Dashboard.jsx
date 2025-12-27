@@ -896,9 +896,9 @@ export default function Dashboard() {
           {/* Today's Schedule - Full width */}
           <div className="md:col-span-12 glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl">
             <h3 className="text-base md:text-lg font-bold mb-3 md:mb-4">Today's Schedule</h3>
-            {todaySchedule.length > 0 ? (
+            {todaySchedule.filter(block => block.start >= 0 && block.end >= 0 && block.start < 24 && block.end <= 24).length > 0 ? (
               <div className="space-y-2">
-                {todaySchedule.map((block) => {
+                {todaySchedule.filter(block => block.start >= 0 && block.end >= 0 && block.start < 24 && block.end <= 24).map((block) => {
                   const formatTime = (decimalTime) => {
                     const hours = Math.floor(decimalTime);
                     const minutes = Math.round((decimalTime - hours) * 60);
