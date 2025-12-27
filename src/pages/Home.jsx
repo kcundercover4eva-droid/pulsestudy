@@ -42,23 +42,25 @@ export default function Home() {
 
   // App Layout
   return (
-    <div className="fixed inset-0 bg-slate-950 text-white flex flex-col font-sans" style={{
+    <div className="fixed inset-0 bg-slate-950 text-white flex flex-col font-sans overflow-hidden" style={{
       '--accent-primary': theme.primary,
       '--accent-secondary': theme.secondary
     }}>
-      <main className="flex-1 overflow-y-auto pb-28 overflow-x-hidden">
-        {appTab === 'dashboard' && <Dashboard />}
-        {appTab === 'quiz' && <StudyHub />}
-        {appTab === 'schedule' && (
-          <div className="p-4 min-h-full">
-            <ScheduleBuilder />
-          </div>
-        )}
-        {appTab === 'generate' && <GenerateContent />}
+      <main className="flex-1 overflow-y-auto overflow-x-hidden pb-24">
+        <div className="min-h-full">
+          {appTab === 'dashboard' && <Dashboard />}
+          {appTab === 'quiz' && <StudyHub />}
+          {appTab === 'schedule' && (
+            <div className="p-4">
+              <ScheduleBuilder />
+            </div>
+          )}
+          {appTab === 'generate' && <GenerateContent />}
+        </div>
       </main>
 
       {/* Bottom Nav */}
-      <div className="fixed bottom-0 left-0 right-0 h-20 glass border-t border-white/10 z-50 flex justify-around items-center px-2 backdrop-blur-xl bg-black/80 safe-area-inset-bottom">
+      <div className="fixed bottom-0 left-0 right-0 h-20 glass border-t border-white/10 z-[100] flex justify-around items-center px-2 backdrop-blur-xl bg-slate-950/95">
         <button 
           onClick={() => setAppTab('schedule')}
           className={`flex flex-col items-center gap-1 transition-all duration-300 ${appTab === 'schedule' ? 'scale-110' : 'text-white/40 hover:text-white/70'}`}
