@@ -568,6 +568,23 @@ export default function Dashboard() {
     },
   });
 
+  // Get today's schedule blocks
+  const { data: todaySchedule = [] } = useQuery({
+    queryKey: ['todaySchedule'],
+    queryFn: async () => {
+      const user = await base44.auth.me();
+      const today = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+      const dayIndex = today === 0 ? 6 : today - 1; // Convert to 0 = Monday, 6 = Sunday
+
+      const blocks = await base44.entities.ScheduleBlock.filter({
+        created_by: user.email,
+        day: dayIndex
+      });
+
+      return blocks.sort((a, b) => a.start - b.start);
+    },
+  });
+
   const createSessionMutation = useMutation({
     mutationFn: async (sessionData) => {
       return await base44.entities.FocusSession.create(sessionData);
@@ -777,12 +794,45 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Recent Activity - Full width */}
+          {/* Today's Schedule - Full width */}
           <div className="md:col-span-12 glass-card p-4 md:p-6 rounded-2xl md:rounded-3xl">
             <h3 className="text-base md:text-lg font-bold mb-3 md:mb-4">Today's Schedule</h3>
-            <div className="flex items-center justify-center h-20 md:h-32 text-white/40 text-sm md:text-base">
-              <p>Build your schedule in the Schedule tab</p>
-            </div>
+            {todaySchedule.length > 0 ? (
+              <div className="space-y-2">
+                {todaySchedule.map((block) => {
+                  const formatTime = (decimalTime) => {
+                    const hours = Math.floor(decimalTime);
+                    const minutes = Math.round((decimalTime - hours) * 60);
+                    const period = hours >= 12 ? 'PM' : 'AM';
+                    const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+                    return `${displayHour}:${minutes.toString().padStart(2, '0')} ${period}`;
+                  };
+
+                  return (
+                    <div 
+                      key={block.id}
+                      className="flex items-center gap-3 p-3 rounded-xl border border-white/10 hover:bg-white/5 transition-colors"
+                    >
+                      <div 
+                        className="w-1 h-12 rounded-full"
+                        style={{ backgroundColor: block.color }}
+                      />
+                      <div className="flex-1">
+                        <div className="font-semibold text-white">{block.title}</div>
+                        <div className="text-xs text-white/60">
+                          {formatTime(block.start)} - {formatTime(block.end)}
+                        </div>
+                      </div>
+                      <div className="text-xs text-white/40 capitalize">{block.type}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-20 md:h-32 text-white/40 text-sm md:text-base">
+                <p>No schedule blocks for today</p>
+              </div>
+            )}
           </div>
           </div>
 
