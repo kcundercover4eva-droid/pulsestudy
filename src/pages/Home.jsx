@@ -60,48 +60,45 @@ export default function Home() {
       </main>
 
       {/* Bottom Nav */}
-      <div className="fixed bottom-0 left-0 right-0 h-20 glass border-t border-white/10 z-[100] backdrop-blur-xl bg-slate-950/95">
-        <div className="h-full w-full flex items-center justify-around px-4">
+      <nav className="fixed bottom-0 left-0 right-0 h-20 glass border-t border-white/10 z-[100] backdrop-blur-xl bg-slate-950/95 safe-area-inset">
+        <div className="h-full max-w-screen-sm mx-auto grid grid-cols-4 gap-0">
           <button 
             onClick={() => setAppTab('schedule')}
-            className={`flex flex-col items-center gap-0.5 transition-all duration-300 ${appTab === 'schedule' ? 'scale-110' : 'text-white/40 hover:text-white/70'}`}
+            className={`flex flex-col items-center justify-center gap-1 transition-colors touch-manipulation ${appTab === 'schedule' ? '' : 'text-white/40'}`}
             style={appTab === 'schedule' ? { color: 'var(--accent-primary)' } : {}}
           >
             <Calendar className="w-6 h-6" />
-            <span className="text-[9px] font-bold uppercase tracking-wider">Schedule</span>
+            <span className="text-[10px] font-semibold">Schedule</span>
           </button>
 
           <button 
             onClick={() => setAppTab('generate')}
-            className={`flex flex-col items-center gap-0.5 transition-all duration-300 ${appTab === 'generate' ? 'scale-110' : 'text-white/40 hover:text-white/70'}`}
+            className={`flex flex-col items-center justify-center gap-1 transition-colors touch-manipulation ${appTab === 'generate' ? '' : 'text-white/40'}`}
             style={appTab === 'generate' ? { color: 'var(--accent-primary)' } : {}}
           >
             <Upload className="w-6 h-6" />
-            <span className="text-[9px] font-bold uppercase tracking-wider">Upload</span>
+            <span className="text-[10px] font-semibold">Upload</span>
           </button>
 
           <button 
             onClick={() => setAppTab('dashboard')}
-            className="relative -top-6 group"
+            className={`flex flex-col items-center justify-center gap-1 transition-colors touch-manipulation ${appTab === 'dashboard' ? '' : 'text-white/40'}`}
+            style={appTab === 'dashboard' ? { color: 'var(--accent-primary)' } : {}}
           >
-            <div 
-              className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg ${appTab === 'dashboard' ? `bg-gradient-to-tr ${theme.gradient} scale-110` : 'bg-slate-800 border border-white/10 group-hover:scale-105'}`}
-              style={appTab === 'dashboard' ? { boxShadow: `0 10px 25px -5px ${theme.primary}33` } : {}}
-            >
-              <HomeIcon className={`w-7 h-7 ${appTab === 'dashboard' ? 'text-white' : 'text-white/60'}`} />
-            </div>
+            <HomeIcon className="w-6 h-6" />
+            <span className="text-[10px] font-semibold">Home</span>
           </button>
 
           <button 
             onClick={() => setAppTab('quiz')}
-            className={`flex flex-col items-center gap-0.5 transition-all duration-300 ${appTab === 'quiz' ? 'scale-110' : 'text-white/40 hover:text-white/70'}`}
+            className={`flex flex-col items-center justify-center gap-1 transition-colors touch-manipulation ${appTab === 'quiz' ? '' : 'text-white/40'}`}
             style={appTab === 'quiz' ? { color: 'var(--accent-primary)' } : {}}
           >
             <Brain className="w-6 h-6" />
-            <span className="text-[9px] font-bold uppercase tracking-wider">Quiz</span>
+            <span className="text-[10px] font-semibold">Quiz</span>
           </button>
         </div>
-      </div>
+      </nav>
     </div>
   );
 }
