@@ -130,10 +130,10 @@ export default function LandingScreen({ onGetStarted }) {
           </Dialog>
         </div>
 
-        {/* Mode Toggle (Hidden feature for demo/testing) */}
+        {/* Mode Toggle */}
         <button 
           onClick={() => setSublineType(prev => prev === 'motivational' ? 'gamified' : 'motivational')}
-          className="absolute bottom-8 text-xs text-white/20 hover:text-white/50 transition-colors"
+          className="mt-8 text-xs text-white/40 hover:text-white/70 transition-colors px-4 py-2 rounded-full border border-white/10 hover:border-white/20"
         >
           Switch Vibe: {sublineType}
         </button>
