@@ -30,7 +30,11 @@ export default function Home() {
   }
 
   if (view === 'onboarding') {
-    return <OnboardingWizard onComplete={() => setView('app')} />;
+    return <OnboardingWizard onComplete={() => {
+      setView('app');
+      // Start the guide after a short delay
+      setTimeout(() => setGuideStep(1), 500);
+    }} />;
   }
 
   // Map accent colors to CSS color values

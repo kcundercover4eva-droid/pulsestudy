@@ -783,7 +783,9 @@ export default function Dashboard() {
 
         {/* User Info Bar */}
         <div className="flex items-center justify-center gap-2 md:gap-4">
-          <StreakDisplay currentStreak={userProfile?.currentStreak || 0} />
+          <div data-guide="streak">
+            <StreakDisplay currentStreak={userProfile?.currentStreak || 0} />
+          </div>
           <NotificationSettings />
           <button
             onClick={() => setShowSettings(true)}
@@ -800,7 +802,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6">
           
           {/* Pomodoro CTA Banner */}
-          <div className="md:col-span-12">
+          <div className="md:col-span-12" data-guide="timer">
             <button
               onClick={() => navigate(createPageUrl('PomodoroTimer'))}
               className="w-full glass-card rounded-2xl md:rounded-3xl p-6 md:p-8 hover:shadow-2xl transition-all group relative overflow-hidden h-full"
@@ -857,7 +859,7 @@ export default function Dashboard() {
           </div>
 
           {/* AI Study Assistant */}
-          <div className="md:col-span-6 h-full">
+          <div className="md:col-span-6 h-full" data-guide="assistant">
             <button
               onClick={() => navigate(createPageUrl('StudyAssistant'))}
               className="w-full glass-card rounded-2xl md:rounded-3xl p-4 md:p-6 hover:shadow-2xl transition-all group h-full"
