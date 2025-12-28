@@ -14,31 +14,31 @@ const steps = [
   {
     id: 2,
     message: "To start, customize ur schedule",
-    targetTab: "schedule",
+    targetSelector: '[data-tab="schedule"]',
     type: "pointer"
   },
   {
     id: 3,
     message: "to use ai quiz, note features etc. then upload material here",
-    targetTab: "study",
+    targetSelector: '[data-tab="generate"]',
     type: "pointer"
   },
   {
     id: 4,
     message: "keep a streak cuz why not",
-    targetElement: "streak",
+    targetSelector: '[data-guide="streak"]',
     type: "pointer"
   },
   {
     id: 5,
     message: "Ahhh, the timer",
-    targetElement: "timer",
+    targetSelector: '[data-guide="timer"]',
     type: "pointer"
   },
   {
     id: 6,
     message: "AI tutor- to HELP not DO IT FOR U",
-    targetElement: "assistant",
+    targetSelector: '[data-guide="assistant"]',
     type: "pointer"
   }
 ];
@@ -72,25 +72,19 @@ export default function FirstTimeGuide({ currentStep, onNext, onComplete }) {
     if (!step || step.type === "fullscreen") return;
     
     const updateRect = () => {
-      let element = null;
-      if (step.targetTab === "schedule") {
-        element = document.querySelector('[data-tab="schedule"]');
-      } else if (step.targetTab === "study") {
-        element = document.querySelector('[data-tab="study"]');
-      } else if (step.targetElement) {
-        element = document.querySelector(`[data-guide="${step.targetElement}"]`);
-      }
-      
+      const element = document.querySelector(step.targetSelector);
       if (element) {
         setTargetRect(element.getBoundingClientRect());
       }
     };
 
-    updateRect();
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(updateRect, 100);
     window.addEventListener('resize', updateRect);
     window.addEventListener('scroll', updateRect);
     
     return () => {
+      clearTimeout(timer);
       window.removeEventListener('resize', updateRect);
       window.removeEventListener('scroll', updateRect);
     };
@@ -132,59 +126,73 @@ export default function FirstTimeGuide({ currentStep, onNext, onComplete }) {
   const getPositionAndArrow = () => {
     if (!targetRect) return { position: {}, arrow: null };
 
-    const padding = 20;
+    const padding = 16;
     const tooltipWidth = 320;
-    const tooltipHeight = 200;
+    const tooltipHeight = 180;
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
     
-    // For nav tabs (schedule/study) - position above
-    if (step.targetTab === "schedule" || step.targetTab === "study") {
+    // Check if target is in bottom navigation area (bottom 200px)
+    const isBottomNav = targetRect.bottom > viewportHeight - 200;
+    
+    // For bottom navigation items - position ABOVE
+    if (isBottomNav) {
+      const left = Math.max(padding, Math.min(targetRect.left + targetRect.width / 2, viewportWidth - tooltipWidth / 2 - padding));
       return {
         position: {
-          bottom: window.innerHeight - targetRect.top + 20,
-          left: targetRect.left + targetRect.width / 2,
+          bottom: viewportHeight - targetRect.top + 20,
+          left: left,
           transform: 'translateX(-50%)'
         },
         arrow: <ArrowDown className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-10 h-10 text-purple-400 animate-bounce" />
       };
     }
 
-    // For streak - position below
-    if (step.targetElement === "streak") {
+    // For top elements (top 150px) - position BELOW
+    if (targetRect.top < 150) {
+      const left = Math.max(padding, Math.min(targetRect.left + targetRect.width / 2, viewportWidth - tooltipWidth / 2 - padding));
       return {
         position: {
           top: targetRect.bottom + 20,
-          left: targetRect.left + targetRect.width / 2,
+          left: left,
           transform: 'translateX(-50%)'
         },
         arrow: <ArrowUp className="absolute -top-10 left-1/2 -translate-x-1/2 w-10 h-10 text-purple-400 animate-bounce" />
       };
     }
 
-    // For timer and assistant - check if they fit on the right, otherwise position above
-    if (step.targetElement === "timer" || step.targetElement === "assistant") {
-      const fitsOnRight = targetRect.right + tooltipWidth + padding < window.innerWidth;
-      
-      if (fitsOnRight) {
-        return {
-          position: {
-            top: Math.max(padding, Math.min(targetRect.top + targetRect.height / 2 - tooltipHeight / 2, window.innerHeight - tooltipHeight - padding)),
-            left: targetRect.right + 20
-          },
-          arrow: <ArrowLeft className="absolute left-[-40px] top-1/2 -translate-y-1/2 w-10 h-10 text-purple-400 animate-pulse" />
-        };
-      } else {
-        return {
-          position: {
-            bottom: window.innerHeight - targetRect.top + 20,
-            left: '50%',
-            transform: 'translateX(-50%)'
-          },
-          arrow: <ArrowDown className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-10 h-10 text-purple-400 animate-bounce" />
-        };
-      }
+    // For middle elements - try right, then below, then above
+    const fitsOnRight = targetRect.right + tooltipWidth + padding < viewportWidth;
+    const fitsBelow = targetRect.bottom + tooltipHeight + padding < viewportHeight - 160;
+    
+    if (fitsOnRight) {
+      const top = Math.max(padding, Math.min(targetRect.top + targetRect.height / 2 - tooltipHeight / 2, viewportHeight - tooltipHeight - 160));
+      return {
+        position: {
+          top: top,
+          left: targetRect.right + 20
+        },
+        arrow: <ArrowLeft className="absolute left-[-40px] top-1/2 -translate-y-1/2 w-10 h-10 text-purple-400 animate-pulse" />
+      };
+    } else if (fitsBelow) {
+      return {
+        position: {
+          top: targetRect.bottom + 20,
+          left: '50%',
+          transform: 'translateX(-50%)'
+        },
+        arrow: <ArrowUp className="absolute -top-10 left-1/2 -translate-x-1/2 w-10 h-10 text-purple-400 animate-bounce" />
+      };
+    } else {
+      return {
+        position: {
+          bottom: viewportHeight - targetRect.top + 20,
+          left: '50%',
+          transform: 'translateX(-50%)'
+        },
+        arrow: <ArrowDown className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-10 h-10 text-purple-400 animate-bounce" />
+      };
     }
-
-    return { position: {}, arrow: null };
   };
 
   const { position, arrow } = getPositionAndArrow();
