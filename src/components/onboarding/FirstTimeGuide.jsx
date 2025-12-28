@@ -211,13 +211,16 @@ export default function FirstTimeGuide({ currentStep, onNext, onComplete }) {
 
     const targetCenterX = targetRect.left + targetRect.width / 2;
     const targetCenterY = targetRect.top + targetRect.height / 2;
-    const tooltipRect = position;
+    const viewportHeight = window.innerHeight;
 
     // Check if target is in bottom nav
-    const isBottomNav = targetRect.bottom > window.innerHeight - 200;
+    const isBottomNav = targetRect.bottom > viewportHeight - 200;
+    
+    // Check if target is in top area
+    const isTopArea = targetRect.top < 150;
 
     if (isBottomNav) {
-      // Arrow should point down from tooltip to target
+      // Arrow should point down at target from above
       return (
         <div 
           className="fixed z-[101] pointer-events-none"
@@ -228,6 +231,22 @@ export default function FirstTimeGuide({ currentStep, onNext, onComplete }) {
           }}
         >
           <ArrowDown className="w-10 h-10 text-purple-400 animate-bounce drop-shadow-lg" />
+        </div>
+      );
+    }
+    
+    if (isTopArea) {
+      // Arrow should point up at target from below
+      return (
+        <div 
+          className="fixed z-[101] pointer-events-none"
+          style={{
+            left: targetCenterX,
+            top: targetRect.bottom + 30,
+            transform: 'translateX(-50%)'
+          }}
+        >
+          <ArrowUp className="w-10 h-10 text-purple-400 animate-bounce drop-shadow-lg" />
         </div>
       );
     }
