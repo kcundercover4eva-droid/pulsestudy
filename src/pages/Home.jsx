@@ -45,13 +45,8 @@ export default function Home() {
   React.useEffect(() => {
     if (profileLoading || view !== 'checking') return;
     
-    if (!userProfile?.hasCompletedOnboarding) {
-      // First time user - show onboarding wizard
-      setView('onboarding');
-    } else {
-      // Show landing every time
-      setView('landing');
-    }
+    // Always show landing first
+    setView('landing');
   }, [userProfile, profileLoading, view]);
 
 
@@ -74,7 +69,11 @@ export default function Home() {
 
   if (view === 'landing') {
     return <LandingScreen onGetStarted={() => {
-      setView('app');
+      if (!userProfile?.hasCompletedOnboarding) {
+        setView('onboarding');
+      } else {
+        setView('app');
+      }
     }} />;
   }
 
