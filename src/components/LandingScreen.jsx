@@ -192,14 +192,16 @@ export default function LandingScreen({ onGetStarted }) {
           <p className="text-lg md:text-xl font-semibold text-white/90 tracking-wide mb-2">
             Focus smarter. Study stronger.
           </p>
-          <motion.p 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="text-base text-cyan-300/80 font-medium"
-          >
-            Ready to level up, {userName}?
-          </motion.p>
+          {userName && userName !== 'there' && (
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="text-base text-cyan-300/80 font-medium"
+            >
+              Ready to level up, {userName}?
+            </motion.p>
+          )}
         </motion.div>
 
         {/* Rotating Sublines */}
