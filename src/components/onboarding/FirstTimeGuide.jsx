@@ -270,7 +270,7 @@ export default function FirstTimeGuide({ currentStep, onNext, onComplete }) {
               repeat: Infinity,
               ease: "easeInOut"
             }}
-            className="fixed z-[92] rounded-2xl pointer-events-none"
+            className="fixed z-[100000] rounded-2xl pointer-events-none"
             style={{
               top: targetRect.top - 8,
               left: targetRect.left - 8,
