@@ -375,7 +375,13 @@ export default function PomodoroTimer() {
                 {AMBIENT_SOUNDS.map(sound => (
                   <button
                     key={sound.id}
-                    onClick={() => setAmbientSound(sound.id)}
+                    onClick={() => {
+                      setAmbientSound(sound.id);
+                      stopAmbient();
+                      if (sound.id !== 'none' && soundEnabled) {
+                        playAmbient(sound.id);
+                      }
+                    }}
                     className={`p-3 rounded-xl text-center transition-all ${
                       ambientSound === sound.id
                         ? 'bg-purple-500/20 border-2 border-purple-500'
@@ -390,7 +396,10 @@ export default function PomodoroTimer() {
             </div>
 
             <Button
-              onClick={() => setPhase('idle')}
+              onClick={() => {
+                stopAmbient();
+                setPhase('idle');
+              }}
               className={`w-full h-14 rounded-2xl font-bold text-lg bg-gradient-to-r ${getColorByProgress()} hover:scale-105 transition-transform`}
             >
               Save & Continue
