@@ -290,7 +290,7 @@ export default function FirstTimeGuide({ currentStep, onNext, onComplete }) {
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="fixed z-[100] rounded-2xl p-6 w-80 max-w-[90vw] bg-slate-900 border-2 border-purple-500/50 shadow-2xl"
+        className="fixed z-[100000] rounded-2xl p-6 w-80 max-w-[90vw] bg-slate-900 border-2 border-purple-500/50 shadow-2xl"
         style={position}
       >
         
