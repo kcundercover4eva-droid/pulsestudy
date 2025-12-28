@@ -101,7 +101,7 @@ export default function FirstTimeGuide({ currentStep, onNext, onComplete }) {
   // Fullscreen welcome step
   if (step.type === "fullscreen") {
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-xl" style={{ pointerEvents: 'auto' }}>
+      <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black/90 backdrop-blur-xl" style={{ pointerEvents: 'auto' }}>
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
