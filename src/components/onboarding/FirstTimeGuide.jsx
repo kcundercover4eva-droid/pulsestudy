@@ -19,24 +19,30 @@ const steps = [
   },
   {
     id: 3,
-    message: "to use ai quiz, note features etc. then upload material here",
-    targetSelector: '[data-tab="generate"]',
+    message: "AI quiz, flashcards, notes - all here",
+    targetSelector: '[data-tab="study"]',
     type: "pointer"
   },
   {
     id: 4,
+    message: "Upload material here to generate study content!",
+    targetSelector: '[data-tab="generate"]',
+    type: "pointer"
+  },
+  {
+    id: 5,
     message: "keep a streak cuz why not",
     targetSelector: '[data-guide="streak"]',
     type: "pointer"
   },
   {
-    id: 5,
+    id: 6,
     message: "Ahhh, the timer",
     targetSelector: '[data-guide="timer"]',
     type: "pointer"
   },
   {
-    id: 6,
+    id: 7,
     message: "AI tutor- to HELP not DO IT FOR U",
     targetSelector: '[data-guide="assistant"]',
     type: "pointer"
