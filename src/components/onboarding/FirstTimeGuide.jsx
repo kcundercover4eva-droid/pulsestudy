@@ -256,8 +256,39 @@ export default function FirstTimeGuide({ currentStep, onNext, onComplete }) {
 
   return (
     <>
-      {/* Blocking Overlay */}
-      <div className="fixed inset-0 z-[100000] bg-black/60 backdrop-blur-sm" />
+      {/* Blocking Overlay - 4 sections around target */}
+      {targetRect && (
+        <>
+          {/* Top overlay */}
+          <div 
+            className="fixed left-0 right-0 z-[100000] bg-black/60 backdrop-blur-md"
+            style={{ top: 0, height: targetRect.top - 8 }}
+          />
+          {/* Bottom overlay */}
+          <div 
+            className="fixed left-0 right-0 z-[100000] bg-black/60 backdrop-blur-md"
+            style={{ top: targetRect.bottom + 8, bottom: 0 }}
+          />
+          {/* Left overlay */}
+          <div 
+            className="fixed left-0 z-[100000] bg-black/60 backdrop-blur-md"
+            style={{ 
+              top: targetRect.top - 8, 
+              width: targetRect.left - 8,
+              height: targetRect.height + 16
+            }}
+          />
+          {/* Right overlay */}
+          <div 
+            className="fixed right-0 z-[100000] bg-black/60 backdrop-blur-md"
+            style={{ 
+              top: targetRect.top - 8, 
+              left: targetRect.right + 8,
+              height: targetRect.height + 16
+            }}
+          />
+        </>
+      )}
 
       {/* Highlight target element */}
       {targetRect && (
