@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowLeft, Send, Loader2, Sparkles, MessageSquare } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
 
@@ -216,7 +217,7 @@ Generate an engaging mnemonic, analogy, or memory technique to help them remembe
       <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 glass">
         <div className="flex items-center gap-4">
           <button
-            onClick={() => navigate(-1)}
+            onClick={() => navigate(createPageUrl('Home'))}
             className="text-white/60 hover:text-white transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
