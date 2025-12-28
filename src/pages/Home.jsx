@@ -15,7 +15,9 @@ export default function Home() {
   const [view, setView] = useState('checking'); // checking, landing, onboarding, app
   const [appTab, setAppTab] = useState('dashboard'); // dashboard, quiz, schedule, generate
   const [guideStep, setGuideStep] = useState(0);
-  const [landingShownThisSession, setLandingShownThisSession] = useState(false);
+  const [landingShownThisSession, setLandingShownThisSession] = useState(() => {
+    return sessionStorage.getItem('landingShown') === 'true';
+  });
   const dynamicPadding = useBottomPadding();
   const queryClient = useQueryClient();
 
@@ -53,6 +55,7 @@ export default function Home() {
       // Returning user - show landing once per session
       setView('landing');
       setLandingShownThisSession(true);
+      sessionStorage.setItem('landingShown', 'true');
     } else {
       // Already shown landing this session
       setView('app');
@@ -78,7 +81,10 @@ export default function Home() {
   }
 
   if (view === 'landing') {
-    return <LandingScreen onGetStarted={() => setView('app')} />;
+    return <LandingScreen onGetStarted={() => {
+      setView('app');
+      sessionStorage.setItem('landingShown', 'true');
+    }} />;
   }
 
   // Map accent colors to CSS color values
