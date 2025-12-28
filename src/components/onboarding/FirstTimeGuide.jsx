@@ -256,6 +256,9 @@ export default function FirstTimeGuide({ currentStep, onNext, onComplete }) {
 
   return (
     <>
+      {/* Blocking Overlay */}
+      <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm" />
+
       {/* Highlight target element */}
       {targetRect && (
         <>
