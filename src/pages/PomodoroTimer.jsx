@@ -157,7 +157,7 @@ export default function PomodoroTimer() {
 
   // Check if first time visiting Pomodoro
   useEffect(() => {
-    if (userProfile && !userProfile.hasSeenPomodoroPrompt) {
+    if (userProfile && !userProfile.hasSeenPomodoroIntro) {
       setShowFirstTimePrompt(true);
     }
   }, [userProfile]);
@@ -453,7 +453,7 @@ export default function PomodoroTimer() {
             <Button
               onClick={() => {
                 setShowFirstTimePrompt(false);
-                updateProfileMutation.mutate({ hasSeenPomodoroPrompt: true });
+                updateProfileMutation.mutate({ hasSeenPomodoroIntro: true });
               }}
               className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:scale-105 transition-transform h-12 font-bold"
             >
