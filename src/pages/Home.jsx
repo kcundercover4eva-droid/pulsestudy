@@ -15,9 +15,6 @@ export default function Home() {
   const [view, setView] = useState('checking'); // checking, landing, onboarding, app
   const [appTab, setAppTab] = useState('dashboard'); // dashboard, quiz, schedule, generate
   const [guideStep, setGuideStep] = useState(0);
-  const [landingShownThisSession, setLandingShownThisSession] = useState(() => {
-    return sessionStorage.getItem('landingShown') === 'true';
-  });
   const [inApp, setInApp] = useState(() => {
     return sessionStorage.getItem('inApp') === 'true';
   });
@@ -57,14 +54,9 @@ export default function Home() {
     } else if (inApp) {
       // User is already in the app (returning from another page)
       setView('app');
-    } else if (!landingShownThisSession) {
-      // Returning user - show landing once per session
-      setView('landing');
-      setLandingShownThisSession(true);
-      sessionStorage.setItem('landingShown', 'true');
     } else {
-      // Already shown landing this session
-      setView('app');
+      // Show landing every time on fresh load
+      setView('landing');
     }
   }, [userProfile, profileLoading, view, landingShownThisSession]);
 
@@ -92,7 +84,6 @@ export default function Home() {
     return <LandingScreen onGetStarted={() => {
       setView('app');
       setInApp(true);
-      sessionStorage.setItem('landingShown', 'true');
       sessionStorage.setItem('inApp', 'true');
     }} />;
   }
