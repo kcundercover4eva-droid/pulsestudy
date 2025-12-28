@@ -137,18 +137,18 @@ export default function FirstTimeGuide({ currentStep, onNext, onComplete }) {
     const tooltipHeight = 180;
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
-    
+
     // Check if target is in bottom navigation area (bottom 200px)
     const isBottomNav = targetRect.bottom > viewportHeight - 200;
-    
+
     // For bottom navigation items - position ABOVE
     if (isBottomNav) {
-      const left = Math.max(padding, Math.min(targetRect.left + targetRect.width / 2, viewportWidth - tooltipWidth / 2 - padding));
+      const centerX = targetRect.left + targetRect.width / 2;
+      const left = Math.max(padding, Math.min(centerX - tooltipWidth / 2, viewportWidth - tooltipWidth - padding));
       return {
         position: {
           bottom: viewportHeight - targetRect.top + 20,
-          left: left,
-          transform: 'translateX(-50%)'
+          left: left
         },
         arrow: <ArrowDown className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-10 h-10 text-purple-400 animate-bounce" />
       };
@@ -156,12 +156,12 @@ export default function FirstTimeGuide({ currentStep, onNext, onComplete }) {
 
     // For top elements (top 150px) - position BELOW
     if (targetRect.top < 150) {
-      const left = Math.max(padding, Math.min(targetRect.left + targetRect.width / 2, viewportWidth - tooltipWidth / 2 - padding));
+      const centerX = targetRect.left + targetRect.width / 2;
+      const left = Math.max(padding, Math.min(centerX - tooltipWidth / 2, viewportWidth - tooltipWidth - padding));
       return {
         position: {
           top: targetRect.bottom + 20,
-          left: left,
-          transform: 'translateX(-50%)'
+          left: left
         },
         arrow: <ArrowUp className="absolute -top-10 left-1/2 -translate-x-1/2 w-10 h-10 text-purple-400 animate-bounce" />
       };
@@ -170,7 +170,7 @@ export default function FirstTimeGuide({ currentStep, onNext, onComplete }) {
     // For middle elements - try right, then below, then above
     const fitsOnRight = targetRect.right + tooltipWidth + padding < viewportWidth;
     const fitsBelow = targetRect.bottom + tooltipHeight + padding < viewportHeight - 160;
-    
+
     if (fitsOnRight) {
       const top = Math.max(padding, Math.min(targetRect.top + targetRect.height / 2 - tooltipHeight / 2, viewportHeight - tooltipHeight - 160));
       return {
@@ -181,20 +181,22 @@ export default function FirstTimeGuide({ currentStep, onNext, onComplete }) {
         arrow: <ArrowLeft className="absolute left-[-40px] top-1/2 -translate-y-1/2 w-10 h-10 text-purple-400 animate-pulse" />
       };
     } else if (fitsBelow) {
+      const centerX = targetRect.left + targetRect.width / 2;
+      const left = Math.max(padding, Math.min(centerX - tooltipWidth / 2, viewportWidth - tooltipWidth - padding));
       return {
         position: {
           top: targetRect.bottom + 20,
-          left: '50%',
-          transform: 'translateX(-50%)'
+          left: left
         },
         arrow: <ArrowUp className="absolute -top-10 left-1/2 -translate-x-1/2 w-10 h-10 text-purple-400 animate-bounce" />
       };
     } else {
+      const centerX = targetRect.left + targetRect.width / 2;
+      const left = Math.max(padding, Math.min(centerX - tooltipWidth / 2, viewportWidth - tooltipWidth - padding));
       return {
         position: {
           bottom: viewportHeight - targetRect.top + 20,
-          left: '50%',
-          transform: 'translateX(-50%)'
+          left: left
         },
         arrow: <ArrowDown className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-10 h-10 text-purple-400 animate-bounce" />
       };
@@ -206,43 +208,44 @@ export default function FirstTimeGuide({ currentStep, onNext, onComplete }) {
   return (
     <>
       {/* Dark overlay with cutout for target */}
-      <div className="fixed inset-0 z-[90] bg-black/80 backdrop-blur-sm pointer-events-none" />
-      
-      {/* Spotlight on target element */}
+      <div className="fixed inset-0 z-[90] bg-black/60 backdrop-blur-sm pointer-events-none" />
+
+      {/* Highlight target element */}
       {targetRect && (
         <>
+          {/* Glow effect behind target */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="fixed z-[95] rounded-2xl pointer-events-auto"
+            className="fixed z-[91] rounded-2xl pointer-events-none"
             style={{
-              top: targetRect.top - 8,
-              left: targetRect.left - 8,
-              width: targetRect.width + 16,
-              height: targetRect.height + 16,
-              boxShadow: '0 0 0 9999px rgba(0,0,0,0.8), 0 0 60px 20px rgba(168,85,247,0.6)',
-              border: '3px solid rgba(168,85,247,0.8)'
+              top: targetRect.top - 12,
+              left: targetRect.left - 12,
+              width: targetRect.width + 24,
+              height: targetRect.height + 24,
+              boxShadow: '0 0 80px 40px rgba(168,85,247,0.6)',
+              background: 'transparent'
             }}
           />
-          
+
           {/* Pulsing ring */}
           <motion.div
             animate={{ 
-              scale: [1, 1.1, 1],
-              opacity: [0.6, 0.3, 0.6]
+              scale: [1, 1.05, 1],
+              opacity: [0.8, 0.4, 0.8]
             }}
             transition={{ 
               duration: 2,
               repeat: Infinity,
               ease: "easeInOut"
             }}
-            className="fixed z-[94] rounded-2xl pointer-events-none"
+            className="fixed z-[92] rounded-2xl pointer-events-none"
             style={{
-              top: targetRect.top - 12,
-              left: targetRect.left - 12,
-              width: targetRect.width + 24,
-              height: targetRect.height + 24,
-              border: '2px solid rgb(168,85,247)'
+              top: targetRect.top - 8,
+              left: targetRect.left - 8,
+              width: targetRect.width + 16,
+              height: targetRect.height + 16,
+              border: '3px solid rgba(168,85,247,0.9)'
             }}
           />
         </>
