@@ -18,6 +18,9 @@ export default function Home() {
   const [landingShownThisSession, setLandingShownThisSession] = useState(() => {
     return sessionStorage.getItem('landingShown') === 'true';
   });
+  const [inApp, setInApp] = useState(() => {
+    return sessionStorage.getItem('inApp') === 'true';
+  });
   const dynamicPadding = useBottomPadding();
   const queryClient = useQueryClient();
 
@@ -51,6 +54,9 @@ export default function Home() {
     if (!userProfile?.hasCompletedOnboarding) {
       // First time user - show onboarding wizard
       setView('onboarding');
+    } else if (inApp) {
+      // User is already in the app (returning from another page)
+      setView('app');
     } else if (!landingShownThisSession) {
       // Returning user - show landing once per session
       setView('landing');
@@ -76,6 +82,8 @@ export default function Home() {
     return <OnboardingWizard onComplete={() => {
       updateProfileMutation.mutate({ hasCompletedOnboarding: true });
       setView('app');
+      setInApp(true);
+      sessionStorage.setItem('inApp', 'true');
       setGuideStep(1);
     }} />;
   }
@@ -83,7 +91,9 @@ export default function Home() {
   if (view === 'landing') {
     return <LandingScreen onGetStarted={() => {
       setView('app');
+      setInApp(true);
       sessionStorage.setItem('landingShown', 'true');
+      sessionStorage.setItem('inApp', 'true');
     }} />;
   }
 
