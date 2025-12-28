@@ -178,7 +178,7 @@ export default function FirstTimeGuide({ currentStep, onNext, onComplete }) {
           top: top,
           left: targetRect.right + 20
         },
-        arrow: <ArrowLeft className="absolute left-[-40px] top-1/2 -translate-y-1/2 w-10 h-10 text-purple-400 animate-pulse" />
+        arrow: null
       };
     } else if (fitsBelow) {
       const centerX = targetRect.left + targetRect.width / 2;
@@ -205,34 +205,46 @@ export default function FirstTimeGuide({ currentStep, onNext, onComplete }) {
 
   const { position, arrow } = getPositionAndArrow();
 
+  // Calculate arrow position to point at target center
+  const getArrowPosition = () => {
+    if (!targetRect) return null;
+
+    const targetCenterX = targetRect.left + targetRect.width / 2;
+    const targetCenterY = targetRect.top + targetRect.height / 2;
+    const tooltipRect = position;
+
+    // Check if target is in bottom nav
+    const isBottomNav = targetRect.bottom > window.innerHeight - 200;
+
+    if (isBottomNav) {
+      // Arrow should point down from tooltip to target
+      return (
+        <div 
+          className="fixed z-[101] pointer-events-none"
+          style={{
+            left: targetCenterX,
+            top: targetRect.top - 30,
+            transform: 'translateX(-50%)'
+          }}
+        >
+          <ArrowDown className="w-10 h-10 text-purple-400 animate-bounce drop-shadow-lg" />
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <>
-      {/* Dark overlay with cutout for target */}
-      <div className="fixed inset-0 z-[90] bg-black/60 backdrop-blur-sm pointer-events-none" />
-
       {/* Highlight target element */}
       {targetRect && (
         <>
-          {/* Glow effect behind target */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="fixed z-[91] rounded-2xl pointer-events-none"
-            style={{
-              top: targetRect.top - 12,
-              left: targetRect.left - 12,
-              width: targetRect.width + 24,
-              height: targetRect.height + 24,
-              boxShadow: '0 0 80px 40px rgba(168,85,247,0.6)',
-              background: 'transparent'
-            }}
-          />
-
           {/* Pulsing ring */}
           <motion.div
             animate={{ 
-              scale: [1, 1.05, 1],
-              opacity: [0.8, 0.4, 0.8]
+              scale: [1, 1.08, 1],
+              opacity: [1, 0.5, 1]
             }}
             transition={{ 
               duration: 2,
@@ -245,12 +257,16 @@ export default function FirstTimeGuide({ currentStep, onNext, onComplete }) {
               left: targetRect.left - 8,
               width: targetRect.width + 16,
               height: targetRect.height + 16,
-              border: '3px solid rgba(168,85,247,0.9)'
+              border: '4px solid rgb(168,85,247)',
+              boxShadow: '0 0 40px 10px rgba(168,85,247,0.8), inset 0 0 40px 10px rgba(168,85,247,0.3)'
             }}
           />
         </>
       )}
-      
+
+      {/* Arrow pointing at target */}
+      {getArrowPosition()}
+
       {/* Tooltip */}
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
@@ -258,7 +274,6 @@ export default function FirstTimeGuide({ currentStep, onNext, onComplete }) {
         className="fixed z-[100] glass-card rounded-2xl p-6 w-80 max-w-[90vw]"
         style={position}
       >
-        {arrow}
         
         <p className="text-white text-lg font-bold mb-4 text-center leading-tight">
           {step.message}
