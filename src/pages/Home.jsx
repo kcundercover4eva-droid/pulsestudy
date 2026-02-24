@@ -190,8 +190,8 @@ export default function Home() {
         className="fixed left-0 right-0 z-[99999] bg-slate-900 border-t-2 border-white/20 shadow-[0_-4px_24px_rgba(0,0,0,0.6)]"
         style={{ 
           bottom: '0',
-          paddingTop: '12px',
-          paddingBottom: 'max(env(safe-area-inset-bottom, 56px), 56px)',
+          paddingTop: '6px',
+          paddingBottom: 'max(env(safe-area-inset-bottom, 28px), 28px)',
           touchAction: 'manipulation'
         }}
       >
@@ -199,7 +199,7 @@ export default function Home() {
           {`
             @media (min-width: 768px) {
               nav {
-                padding-bottom: max(env(safe-area-inset-bottom, 26px), 26px) !important;
+                padding-bottom: max(env(safe-area-inset-bottom, 13px), 13px) !important;
               }
             }
           `}
@@ -215,7 +215,7 @@ export default function Home() {
                   setTimeout(() => setShowScheduleHelp(true), 300);
                 }
               }}
-              className="flex flex-col items-center justify-center min-h-[68px] px-3 py-2 transition-all active:scale-95 touch-manipulation relative"
+              className="flex flex-col items-center justify-center min-h-[56px] px-3 py-1 transition-all active:scale-95 touch-manipulation relative"
               style={{ minWidth: '44px', minHeight: '44px' }}
             >
               <div className={`flex flex-col items-center gap-1 ${appTab === 'schedule' ? 'transform scale-105' : ''}`}>
@@ -248,7 +248,7 @@ export default function Home() {
                   setTimeout(() => setShowGenerateHelp(true), 300);
                 }
               }}
-              className="flex flex-col items-center justify-center min-h-[68px] px-3 py-2 transition-all active:scale-95 touch-manipulation relative"
+              className="flex flex-col items-center justify-center min-h-[56px] px-3 py-1 transition-all active:scale-95 touch-manipulation relative"
               style={{ minWidth: '44px', minHeight: '44px' }}
             >
               <div className={`flex flex-col items-center gap-1 ${appTab === 'generate' ? 'transform scale-105' : ''}`}>
@@ -275,7 +275,7 @@ export default function Home() {
             {/* Home Tab */}
             <button 
               onClick={() => setAppTab('dashboard')}
-              className="flex flex-col items-center justify-center min-h-[68px] px-3 py-2 transition-all active:scale-95 touch-manipulation relative"
+              className="flex flex-col items-center justify-center min-h-[56px] px-3 py-1 transition-all active:scale-95 touch-manipulation relative"
               style={{ minWidth: '44px', minHeight: '44px' }}
             >
               <div className={`flex flex-col items-center gap-1 ${appTab === 'dashboard' ? 'transform scale-105' : ''}`}>
@@ -308,7 +308,7 @@ export default function Home() {
                   setTimeout(() => setShowQuizHelp(true), 300);
                 }
               }}
-              className="flex flex-col items-center justify-center min-h-[68px] px-3 py-2 transition-all active:scale-95 touch-manipulation relative"
+              className="flex flex-col items-center justify-center min-h-[56px] px-3 py-1 transition-all active:scale-95 touch-manipulation relative"
               style={{ minWidth: '44px', minHeight: '44px' }}
             >
               <div className={`flex flex-col items-center gap-1 ${appTab === 'quiz' ? 'transform scale-105' : ''}`}>
