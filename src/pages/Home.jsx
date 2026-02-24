@@ -190,8 +190,8 @@ export default function Home() {
         className="fixed left-0 right-0 z-[99999] bg-slate-900 border-t-2 border-white/20 shadow-[0_-4px_24px_rgba(0,0,0,0.6)]"
         style={{ 
           bottom: '0',
-          paddingTop: '6px',
-          paddingBottom: 'max(env(safe-area-inset-bottom, 28px), 28px)',
+          paddingTop: '10px',
+          paddingBottom: 'max(env(safe-area-inset-bottom, 40px), 40px)',
           touchAction: 'manipulation'
         }}
       >
@@ -199,7 +199,7 @@ export default function Home() {
           {`
             @media (min-width: 768px) {
               nav {
-                padding-bottom: max(env(safe-area-inset-bottom, 13px), 13px) !important;
+                padding-bottom: max(env(safe-area-inset-bottom, 20px), 20px) !important;
               }
             }
           `}
