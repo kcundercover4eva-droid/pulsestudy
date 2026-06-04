@@ -1,0 +1,78 @@
+{
+  "name": "UserProfile",
+  "type": "object",
+  "properties": {
+    "accentColor": {
+      "type": "string",
+      "enum": [
+        "coral",
+        "neonGreen",
+        "electricBlue"
+      ],
+      "default": "neonGreen",
+      "description": "User's chosen dopamine accent color"
+    },
+    "motivationStyle": {
+      "type": "string",
+      "enum": [
+        "positive",
+        "negative"
+      ],
+      "default": "positive",
+      "description": "Tone of voice for notifications and nudges"
+    },
+    "weeklyGoalHours": {
+      "type": "number",
+      "default": 10
+    },
+    "totalPoints": {
+      "type": "number",
+      "default": 0
+    },
+    "currency": {
+      "type": "number",
+      "default": 0,
+      "description": "In-app currency for shop"
+    },
+    "currentStreak": {
+      "type": "number",
+      "default": 0
+    },
+    "lastStreakDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Last date the user earned a streak point"
+    },
+    "lastDopamineDropDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Last date the daily dopamine drop was shown"
+    },
+    "hasCompletedOnboarding": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether user has completed first-time onboarding"
+    },
+    "hasSeenPomodoroIntro": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether user has seen the Pomodoro timer intro"
+    },
+    "hasSeenScheduleIntro": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether user has seen the schedule tab intro"
+    },
+    "hasSeenGenerateIntro": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether user has seen the upload/generate tab intro"
+    },
+    "hasSeenQuizIntro": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether user has seen the quiz tab intro"
+    }
+  },
+  "required": []
+}

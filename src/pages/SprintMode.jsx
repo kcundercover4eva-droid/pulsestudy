@@ -6,6 +6,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import moment from 'moment';
 import confetti from 'canvas-confetti';
 import XPPopup from '../components/rewards/XPPopup';
 

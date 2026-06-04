@@ -71,15 +71,14 @@ export default function Home() {
   if (view === 'onboarding') {
     return <OnboardingWizard onComplete={() => {
       updateProfileMutation.mutate({ hasCompletedOnboarding: true });
+      setView('landing');
       setGuideStep(1);
-      setView('app');
     }} />;
   }
 
   if (view === 'landing') {
     return <LandingScreen onGetStarted={() => {
       setView('app');
-      setGuideStep(1);
     }} />;
   }
 
