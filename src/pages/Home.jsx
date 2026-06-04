@@ -8,8 +8,7 @@ import Dashboard from '@/components/dashboard/Dashboard';
 import StudyHub from '@/components/quiz/StudyHub';
 import ScheduleBuilder from '@/components/schedule/ScheduleBuilder';
 import GenerateContent from './GenerateContent';
-import { useBottomPadding } from '@/components/utils/useBottomPadding';
-import { Calendar, Brain, LayoutDashboard, Home as HomeIcon, Upload } from 'lucide-react';
+import { Calendar, Brain, Home as HomeIcon, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Home() {
@@ -19,7 +18,6 @@ export default function Home() {
   const [showScheduleHelp, setShowScheduleHelp] = useState(false);
   const [showGenerateHelp, setShowGenerateHelp] = useState(false);
   const [showQuizHelp, setShowQuizHelp] = useState(false);
-  const dynamicPadding = useBottomPadding();
   const queryClient = useQueryClient();
 
   // Fetch user profile for accent color
@@ -171,7 +169,10 @@ export default function Home() {
           </div>
         </div>
       )}
-      <main className="flex-1 overflow-y-auto overflow-x-hidden" style={{ paddingTop: 'max(env(safe-area-inset-top), 20px)', paddingBottom: `${dynamicPadding}px` }}>
+      {/* Top safe-area spacer */}
+      <div className="bg-slate-950 flex-shrink-0" style={{ height: 'env(safe-area-inset-top, 0px)' }} />
+
+      <main className="flex-1 overflow-y-auto overflow-x-hidden">
         <div>
           {appTab === 'dashboard' && <Dashboard />}
           {appTab === 'quiz' && <StudyHub />}
@@ -186,11 +187,10 @@ export default function Home() {
 
       {/* Bottom Navigation - Mobile Optimized */}
       <nav 
-        className="fixed left-0 right-0 z-[99999] bg-slate-900 border-t-2 border-white/20 shadow-[0_-4px_24px_rgba(0,0,0,0.6)]"
+        className="flex-shrink-0 bg-slate-900 border-t-2 border-white/20 shadow-[0_-4px_24px_rgba(0,0,0,0.6)] z-[99999]"
         style={{ 
-          bottom: '0',
           paddingTop: '8px',
-          paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
           touchAction: 'manipulation'
         }}
       >
