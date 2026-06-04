@@ -66,7 +66,7 @@ export default function OnboardingWizard({ onComplete }) {
   const currentTheme = THEMES.find(t => t.id === data.accentColor);
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-slate-900 text-white p-4 pt-1 pb-8 relative overflow-hidden">
+    <div className="min-h-screen w-full flex items-center justify-center bg-slate-900 text-white relative overflow-y-auto" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)', paddingLeft: '1rem', paddingRight: '1rem' }}>
       
       {/* Background based on selection */}
       <div className={`absolute inset-0 bg-gradient-to-br ${currentTheme.gradient} opacity-20 blur-[100px] transition-all duration-700`} />

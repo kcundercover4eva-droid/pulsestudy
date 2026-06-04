@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
  * Accounts for navigation bar height and safe areas across all device sizes
  */
 export function useBottomPadding() {
-  const [bottomPadding, setBottomPadding] = useState(160);
+  const [bottomPadding, setBottomPadding] = useState(80);
 
   useEffect(() => {
     const calculatePadding = () => {

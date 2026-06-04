@@ -332,7 +332,7 @@ export default function PomodoroTimer() {
   // Show first-time prompt first
   if (showFirstTimePrompt) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xl p-6">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xl" style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)', padding: '1.5rem' }}>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -360,7 +360,7 @@ export default function PomodoroTimer() {
   // Show configuration screen
   if (phase === 'configure') {
     return (
-      <div className="min-h-screen bg-slate-950 p-6 flex items-center justify-center relative overflow-hidden">
+      <div className="min-h-screen bg-slate-950 flex items-start justify-center relative overflow-y-auto" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1.5rem)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)', paddingLeft: '1.5rem', paddingRight: '1.5rem' }}>
         <div className="fixed inset-0 pointer-events-none">
           <div className={`absolute top-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-gradient-to-br ${getColorByProgress()} opacity-20 blur-[120px]`} />
           <div className="absolute bottom-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-purple-600/10 blur-[120px]" />
@@ -465,20 +465,20 @@ export default function PomodoroTimer() {
   const themeColor = accentColor === 'coral' ? 'rose' : accentColor === 'electricBlue' ? 'cyan' : 'green';
 
   return (
-    <div className={`min-h-screen pb-32 relative overflow-hidden ${
+    <div className={`min-h-screen relative overflow-y-auto ${
       currentTheme === 'dark-neon' ? 'bg-slate-950' :
       currentTheme === 'glass' ? 'bg-slate-900' :
       'bg-white'
-    }`}>
+    }`} style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 2rem)' }}>
       {/* Background Effects */}
       <div className="fixed inset-0 pointer-events-none">
         <div className={`absolute top-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-gradient-to-br ${getColorByProgress()} opacity-20 blur-[120px]`} />
         <div className="absolute bottom-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-purple-600/10 blur-[120px]" />
       </div>
 
-      <div className="relative z-10 min-h-screen flex flex-col p-6">
+      <div className="relative z-10 flex flex-col p-4 sm:p-6" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }}>
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <button
             onClick={() => {
               if (phase === 'focus' && isActive) {
@@ -617,7 +617,7 @@ export default function PomodoroTimer() {
           )}
 
           {/* Timer Circle */}
-          <div className="relative w-[320px] h-[320px] mb-12">
+          <div className="relative w-[min(320px,75vw)] h-[min(320px,75vw)] mb-8">
             {/* Animated Ring */}
             <motion.div
               animate={{ scale: [1, 1.02, 1] }}
@@ -625,7 +625,7 @@ export default function PomodoroTimer() {
               className="absolute inset-0 rounded-full border-4 border-white/5"
             />
             
-            <svg className="absolute inset-0 w-full h-full transform -rotate-90">
+            <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 320 320">
               <circle 
                 cx="160" cy="160" r="140" 
                 stroke="currentColor" 

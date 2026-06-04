@@ -31,7 +31,7 @@ export default function BreakTimer({ timeLeft, isActive, onPause, onResume, onSk
   const suggestion = BREAK_SUGGESTIONS[currentSuggestion];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex flex-col items-center justify-center p-6 relative overflow-y-auto" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1.5rem)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 1.5rem)' }}>
       {/* Animated Background Circles */}
       <motion.div
         animate={{

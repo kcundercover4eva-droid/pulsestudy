@@ -93,7 +93,7 @@ export default function Home() {
 
   // App Layout
   return (
-    <div className="fixed inset-0 bg-slate-950 text-white flex flex-col font-sans overflow-hidden" style={{
+    <div className="fixed inset-0 bg-slate-950 text-white flex flex-col font-sans" style={{
       '--accent-primary': theme.primary,
       '--accent-secondary': theme.secondary
     }}>
@@ -171,7 +171,7 @@ export default function Home() {
           </div>
         </div>
       )}
-      <main className="flex-1 overflow-y-auto overflow-x-hidden pt-safe" style={{ paddingBottom: `${dynamicPadding}px` }}>
+      <main className="flex-1 overflow-y-auto overflow-x-hidden" style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: `${dynamicPadding}px` }}>
         <div>
           {appTab === 'dashboard' && <Dashboard />}
           {appTab === 'quiz' && <StudyHub />}
