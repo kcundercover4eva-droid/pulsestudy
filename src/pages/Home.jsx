@@ -91,10 +91,15 @@ export default function Home() {
 
   // App Layout
   return (
-    <div className="fixed inset-0 bg-slate-950 text-white flex flex-col font-sans" style={{
-      '--accent-primary': theme.primary,
-      '--accent-secondary': theme.secondary
-    }}>
+    <div
+      className="fixed inset-0 bg-slate-950 text-white font-sans"
+      style={{
+        '--accent-primary': theme.primary,
+        '--accent-secondary': theme.secondary,
+        display: 'grid',
+        gridTemplateRows: 'env(safe-area-inset-top, 0px) 1fr auto',
+      }}
+    >
       {/* First Time Guide */}
       {guideStep > 0 && (
         <FirstTimeGuide
@@ -169,15 +174,17 @@ export default function Home() {
           </div>
         </div>
       )}
-      {/* Top safe-area spacer */}
-      <div className="bg-slate-950 flex-shrink-0" style={{ height: 'env(safe-area-inset-top, 0px)' }} />
 
-      <main className="flex-1 overflow-y-auto overflow-x-hidden">
+      {/* Row 1: top safe-area spacer (height = env(safe-area-inset-top)) */}
+      <div className="bg-slate-950" />
+
+      {/* Row 2: scrollable content */}
+      <main className="overflow-y-auto overflow-x-hidden min-h-0">
         <div>
           {appTab === 'dashboard' && <Dashboard />}
           {appTab === 'quiz' && <StudyHub />}
           {appTab === 'schedule' && (
-            <div className="p-3 md:p-4 pb-6 min-h-mobile">
+            <div className="p-3 md:p-4 pb-6">
               <ScheduleBuilder />
             </div>
           )}
@@ -185,13 +192,13 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Bottom Navigation - Mobile Optimized */}
-      <nav 
-        className="flex-shrink-0 bg-slate-900 border-t-2 border-white/20 shadow-[0_-4px_24px_rgba(0,0,0,0.6)] z-[99999]"
-        style={{ 
+      {/* Row 3: Bottom Navigation */}
+      <nav
+        className="bg-slate-900 border-t-2 border-white/20 shadow-[0_-4px_24px_rgba(0,0,0,0.6)] z-[99999]"
+        style={{
           paddingTop: '8px',
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-          touchAction: 'manipulation'
+          paddingBottom: 'env(safe-area-inset-bottom, 8px)',
+          touchAction: 'manipulation',
         }}
       >
         <div className="w-full max-w-screen-lg mx-auto">
