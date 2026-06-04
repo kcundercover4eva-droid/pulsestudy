@@ -15,15 +15,19 @@ export function useBottomPadding() {
 
       // Get actual rendered height of navigation
       const navHeight = nav.offsetHeight;
-      
-      // Get safe area inset (for notched devices)
-      const safeAreaBottom = parseInt(
-        getComputedStyle(document.documentElement)
-          .getPropertyValue('--sab') || '0'
-      );
+
+      // Read safe-area-inset-bottom via a temporary element with padding set to env()
+      const probe = document.createElement('div');
+      probe.style.position = 'fixed';
+      probe.style.bottom = '0';
+      probe.style.paddingBottom = 'env(safe-area-inset-bottom, 0px)';
+      probe.style.visibility = 'hidden';
+      document.body.appendChild(probe);
+      const safeAreaBottom = parseInt(getComputedStyle(probe).paddingBottom) || 0;
+      document.body.removeChild(probe);
 
       // Add buffer for comfortable spacing
-      const buffer = 15;
+      const buffer = 8;
       
       // Calculate total padding needed
       const totalPadding = navHeight + safeAreaBottom + buffer;

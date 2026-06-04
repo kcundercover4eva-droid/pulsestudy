@@ -171,7 +171,7 @@ export default function Home() {
           </div>
         </div>
       )}
-      <main className="flex-1 overflow-y-auto overflow-x-hidden" style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: `${dynamicPadding}px` }}>
+      <main className="flex-1 overflow-y-auto overflow-x-hidden" style={{ paddingTop: 'max(env(safe-area-inset-top), 20px)', paddingBottom: `${dynamicPadding}px` }}>
         <div>
           {appTab === 'dashboard' && <Dashboard />}
           {appTab === 'quiz' && <StudyHub />}
