@@ -189,20 +189,11 @@ export default function Home() {
         className="fixed left-0 right-0 z-[99999] bg-slate-900 border-t-2 border-white/20 shadow-[0_-4px_24px_rgba(0,0,0,0.6)]"
         style={{ 
           bottom: '0',
-          paddingTop: '10px',
-          paddingBottom: 'max(env(safe-area-inset-bottom, 40px), 40px)',
+          paddingTop: '8px',
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)',
           touchAction: 'manipulation'
         }}
       >
-        <style>
-          {`
-            @media (min-width: 768px) {
-              nav {
-                padding-bottom: max(env(safe-area-inset-bottom, 20px), 20px) !important;
-              }
-            }
-          `}
-        </style>
         <div className="w-full max-w-screen-lg mx-auto">
           <div className="grid grid-cols-4 gap-0">
             {/* Schedule Tab */}
