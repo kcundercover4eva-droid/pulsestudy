@@ -162,6 +162,40 @@ export default function PomodoroTimer() {
     }
   }, [userProfile]);
 
+  const playCompletionChime = () => {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+
+    // Triumphant ascending fanfare + sustained bell chord (~7 seconds)
+    const sequence = [
+      { freq: 523.25, start: 0,   duration: 0.7 },   // C5
+      { freq: 659.25, start: 0.4, duration: 0.7 },   // E5
+      { freq: 783.99, start: 0.8, duration: 0.7 },   // G5
+      { freq: 1046.50, start: 1.2, duration: 3.0 },  // C6 bell
+      { freq: 1318.51, start: 1.6, duration: 2.5 },  // E6
+      { freq: 1174.66, start: 2.1, duration: 2.0 },  // D6
+      { freq: 1046.50, start: 2.8, duration: 4.2 },  // C6 sustain
+      { freq: 783.99,  start: 3.2, duration: 3.8 },  // G5 sustain
+      { freq: 523.25,  start: 3.6, duration: 3.4 },  // C5 bass sustain
+    ];
+
+    sequence.forEach(({ freq, start, duration }) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const t = ctx.currentTime + start;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.22, t + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+      osc.start(t);
+      osc.stop(t + duration + 0.1);
+    });
+  };
+
   const handleStart = () => {
     setIsActive(true);
     setPhase('focus');
@@ -245,7 +279,10 @@ export default function PomodoroTimer() {
     confetti({ particleCount: 200, spread: 120, origin: { y: 0.6 } });
     setTimeout(() => confetti({ particleCount: 150, spread: 100, origin: { y: 0.4 } }), 300);
     
-    if (soundEnabled) playSound('complete');
+    if (soundEnabled) {
+      playCompletionChime();
+      playSound('complete');
+    }
     stopAmbient();
     
     setPhase('summary');
